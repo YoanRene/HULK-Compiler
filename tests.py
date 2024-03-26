@@ -76,5 +76,73 @@ def test_parser():
 
     assert str(derivation) == '[A -> int, A -> int + A, A -> int, A -> int + A, E -> A = A]'
 
+def test_parser_lexer():
+
+    #lexeando
+
+    nonzero_digits = '|'.join(str(n) for n in range(1,10))
+    letters = '|'.join(chr(n) for n in range(ord('a'),ord('z')+1))
+    lexer = Lexer([
+        ('num', f'({nonzero_digits})(0|{nonzero_digits})*'),
+        ('for' , 'for'),
+        ('foreach' , 'foreach'),
+        ('space', '  *'),
+        ('plus','+'),
+        ('equal','='),
+        ('id', f'({letters})({letters}|0|{nonzero_digits})*')
+    ], 'eof')
+    G= Grammar()
+
+    #text = '5465 for 45foreach fore'
+
+    text= '2+3=4+4'
+    tokens = lexer(text)
+    # assert [t.token_type for t in tokens] == ['num', 'space', 'for', 'space', 'num', 'foreach', 'space', 'id', 'eof']
+    # assert [t.lex for t in tokens] == ['5465', ' ', 'for', ' ', '45', 'foreach', ' ', 'fore', '$']
+
+    E = G.NonTerminal('E', True)
+    A = G.NonTerminal('A')
+    equal, plus, num , for_,foreach , id, space = G.Terminals('= + int for foreach id space')
+
+    E %=  A + equal + A | num
+    A %= num + plus + A | num
+
+    types=[]
+
+    ####NO#####
+
+    for t in tokens:
+        if t.token_type == 'num':
+            types.append(num)
+        elif t.token_type == 'for':
+            types.append(for_)
+        elif t.token_type == 'foreach':
+            types.append(foreach)
+        elif t.token_type == 'id':
+            types.append(id)
+        elif t.token_type == 'plus':
+            types.append(plus)
+        elif t.token_type == 'eof':
+            types.append(G.EOF)
+        elif t.token_type== 'equal':
+            types.append(equal)
+        else:
+            types.append(space)
+
+    ##########
+
+
+    #parseando
+
+    parser = LR1Parser(G, verbose=True)
+
+    derivation = parser(types)
+
+    print(str(derivation))
+
+    #assert str(derivation) == '[A -> int, A -> int + A, A -> int, A -> int + A, E -> A = A]'
+    
+
 #test_lexer()
-test_parser()
+#test_parser()
+test_parser_lexer()
