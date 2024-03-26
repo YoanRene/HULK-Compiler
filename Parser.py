@@ -248,8 +248,8 @@ def metodo_predictivo_no_recursivo(G, M=None, firsts=None, follows=None):
 #  A=frozenset(d.NextItem()for d in A if d.NextSymbol==P)
 #  return A if just_kernel else closure_lr1(A,firsts)
 
-# def multiline_formatter(state):
-#     return '\n'.join(str(item) for item in state)
+def multiline_formatter(state):
+    return '\n'.join(str(item) for item in state)
 
 # def build_LR1_automaton(G):
 #  assert len(G.startSymbol.productions)==1,'Grammar must be augmented'
