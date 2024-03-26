@@ -147,7 +147,7 @@ def test_hulk():
     lexer = Lexer([
         ('and','&'),
         ('space', '  *'),
-        ('or','#'),
+        ('or','//|'),
         ('not','!'),
         ('true','True'),
         ('false','False'),
@@ -162,7 +162,9 @@ def test_hulk():
     boolean_expr %= boolean_expr + or_ + boolean_expr  
     boolean_expr %= not_ + boolean_expr
 
-    text= 'True & False # ! True'
+    text= 'True & False | ! True'
+
+    
 
 
     tokens = lexer(text)

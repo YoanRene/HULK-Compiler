@@ -101,11 +101,21 @@ def regex_tokenizer(text, grammar, skip_whitespaces=True):
         x: Token(x, grammar[x])
         for x in ['|', '*', '(', ')', 'ε']
     }
+    escape=False
     for char in text:
+        if escape:
+            break
         if skip_whitespaces and char.isspace():
             continue
         try:
-            token = token_map[char]
+            if char == '/':
+                if text[text.index(char) + 1] == '/':
+                    token = Token(text[text.index(char) + 2], grammar['symbol'])
+                    escape = True
+
+            else:
+                token = token_map[char]
+            
         except KeyError:
             token = Token(char, grammar['symbol'])
         finally:
