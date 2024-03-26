@@ -141,8 +141,36 @@ def test_parser_lexer():
     print(str(derivation))
 
     #assert str(derivation) == '[A -> int, A -> int + A, A -> int, A -> int + A, E -> A = A]'
+
+def test_hulk():
+
+    lexer = Lexer([
+        ('and','&'),
+        ('space', '  *'),
+        ('or','#'),
+        ('not','!'),
+        ('true','True'),
+        ('false','False'),
+    ], 'eof')
+    
+    G=Grammar()
+    boolean_expr =G.NonTerminal('boolean_expr',True)
+    and_,or_,not_,true,false = G.Terminals('and or not true false')
+    boolean_expr %= true
+    boolean_expr %=false
+    boolean_expr %= boolean_expr + and_ + boolean_expr
+    boolean_expr %= boolean_expr + or_ + boolean_expr  
+    boolean_expr %= not_ + boolean_expr
+
+    text= 'True & False # ! True'
+
+
+    tokens = lexer(text)
+    for i in tokens:
+        print(i.lex)
     
 
 #test_lexer()
 #test_parser()
-test_parser_lexer()
+#test_parser_lexer()
+test_hulk()
