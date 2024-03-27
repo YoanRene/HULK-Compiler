@@ -147,7 +147,7 @@ def test_hulk():
     lexer = Lexer([
         ('and','&'),
         ('space', '  *'),
-        ('or','//|'),
+        ('or','\|'),
         ('not','!'),
         ('true','True'),
         ('false','False'),
@@ -169,10 +169,11 @@ def test_hulk():
 
     tokens = lexer(text)
     for i in tokens:
-        print(i.lex)
+        print(i.token_type)
     
 
 #test_lexer()
+
 #test_parser()
 #test_parser_lexer()
 test_hulk()

@@ -104,15 +104,14 @@ def regex_tokenizer(text, grammar, skip_whitespaces=True):
     escape=False
     for char in text:
         if escape:
-            break
+            escape=False
+            continue
         if skip_whitespaces and char.isspace():
             continue
         try:
-            if char == '/':
-                if text[text.index(char) + 1] == '/':
-                    token = Token(text[text.index(char) + 2], grammar['symbol'])
-                    escape = True
-
+            if char == '\\':
+                token = Token(text[text.index(char) + 1], grammar['symbol'])
+                escape = True
             else:
                 token = token_map[char]
             
