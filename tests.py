@@ -164,16 +164,67 @@ def test_hulk():
 
     text= 'True & False | ! True'
 
-    
+    tokens = lexer(text)
+    for i in tokens:
+        print(i.token_type)
 
+
+
+def loop_grammar():
+
+    lexer = Lexer([
+        ('for','for'),
+        ('space', '  *'),
+        ('while','while'),
+        ('not','!'),
+        ('true','True'),
+        ('false','False'),
+        ('left','\('),
+        ('right','\)'),
+
+    ], 'eof')
+
+    G=Grammar()
+    program = G.NonTerminal('<program>', startSymbol=True)
+    bool_expr = G.NonTerminal('<bool-expr>')
+    expr = G.NonTerminal('<expr>')
+    block_expr = G.NonTerminal('<block-expr>')
+    conditional_expr, loop_expr = G.NonTerminals('<conditional-expr> <loop-expr>')
+    while_loop, for_loop = G.NonTerminals('<while-loop> <for-loop>')
+
+    # Terminals
+    wloop, floop = G.Terminals('WHILE FOR') 
+    boolx = G.Terminal('bool')
+    eof = G.EOF
+
+    # Productions
+    program %= block_expr
+    block_expr %= block_expr + expr
+    block_expr %= expr
+    expr %= bool_expr
+    expr %=loop_expr
+    expr %=conditional_expr
+    bool_expr %= boolx
+    loop_expr %= while_loop
+    loop_expr %= for_loop
+    while_loop %= wloop + boolx + block_expr
+    for_loop %= floop + boolx + block_expr
+    conditional_expr %= boolx + block_expr + block_expr
+
+    text= 'while True for False'
 
     tokens = lexer(text)
     for i in tokens:
         print(i.token_type)
+
+
+
+
     
 
 #test_lexer()
 
 #test_parser()
 #test_parser_lexer()
-test_hulk()
+#test_hulk()
+loop_grammar()
