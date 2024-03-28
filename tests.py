@@ -225,18 +225,22 @@ def test_grammar():
     stat_list, stat = G.NonTerminals('<stat_list> <stat>')
     let_var, def_func, print_stat, arg_list = G.NonTerminals('<let-var> <def-func> <print-stat> <arg-list>')
     expr, term, factor, atom, power= G.NonTerminals('<expr> <term> <factor> <atom> <power>')
-    func_call, expr_list, expr_str = G.NonTerminals('<func-call> <expr-list> <expr-str>')
+    func_call, expr_list, expr_str, block = G.NonTerminals('<func-call> <expr-list> <expr-str> <block-expr>')
 
 
-    let, defx, printx = G.Terminals('let def print')
+    let, function_, printx = G.Terminals('let function print')
     sqrt, sin, cos, tan, log, exp, rand = G.Terminals('sqrt sin cos tan log exp rand')
-    semi, comma, opar, cpar, arrow = G.Terminals('; , ( ) ->')
-    equal, plus, minus, star, div, pow, arroba = G.Terminals('= + - * / ^ @') #######
+    semi, comma, opar, cpar, arrow, okey, ckey= G.Terminals('; , ( ) => { }')
+    equal, plus, minus, star, div, pow, arroba, pow_star = G.Terminals('= + - * / ^ @ **') #######
     idx, num, string_ = G.Terminals('id int str')
 
     # Productions
 
     program %= stat_list#, lambda h,s: ProgramNode(s[1])
+    program %= block#, lambda h,s: ProgramNode(s[1] + s[2])
+
+    block %= okey + stat_list + ckey#, lambda h,s: BlockNode([]) # Your code here!!! (add rule)
+    block %= okey + stat_list + ckey +semi#, lambda h,s: BlockNode([]) # Your code here!!! (add rule)
 
     stat_list %= stat + semi#, lambda h,s: [s[1]] # Your code here!!! (add rule)
     stat_list %= stat + semi + stat_list#, lambda h,s: [s[1]] + s[3] # Your code here!!! (add rule)
@@ -248,7 +252,8 @@ def test_grammar():
 
     let_var %= let + idx + equal + expr#, lambda h,s: VarDeclarationNode(s[2], s[4]) # Your code here!!! (add rule)
 
-    def_func %= defx + idx + opar + arg_list + cpar + arrow + expr#, lambda h,s: FuncDeclarationNode(s[2], s[4], s[7]) # Your code here!!! (add rule)
+    def_func %= function_ + idx + opar + arg_list + cpar + arrow + expr#, lambda h,s: FuncDeclarationNode(s[2], s[4], s[7]) # Your code here!!! (add rule)
+    def_func %= function_ + idx + opar + arg_list + cpar + block#, lambda h,s: FuncDeclarationNode(s[2], s[4], s[6]) # Your code here!!! (add rule)
 
     expr_str %= expr_str + arroba + expr#, lambda h,s: ConcatNode(s[1],s[3]) # Your code here!!! (add rule)
     expr_str %= expr_str + arroba + string_
@@ -269,6 +274,8 @@ def test_grammar():
     term %= term + div + power#, lambda h,s: DivNode(s[1],s[3]) # Your code here!!! (add rule)
     term %= power#, lambda h,s: s[1] # Your code here!!! (add rule)
 
+
+    power %= power + pow_star + factor#, lambda h,s: PowNode(s[1],s[3]) # Your code here!!! (add rule)
     power %= power + pow + factor#, lambda h,s: PowNode(s[1],s[3]) # Your code here!!! (add rule)
     power %= factor#, lambda h,s: s[1] # Your code here!!! (add rule)
     
@@ -282,7 +289,6 @@ def test_grammar():
     atom %= sqrt + opar + expr + cpar#, lambda h,s: SqrtNode(s[3]) # Your code here!!! (add rule)
     atom %= sin + opar + expr + cpar#, lambda h,s: SinNode(s[3]) # Your code here!!! (add rule)
     atom %= cos + opar + expr + cpar#, lambda h,s: CosNode(s[3]) # Your code here!!! (add rule)
-    atom %= tan + opar + expr + cpar#, lambda h,s: TanNode(s[3]) # Your code here!!! (add rule)
     atom %= log + opar + expr + comma + expr + cpar#, lambda h,s: LogNode(s[3]) # Your code here!!! (add rule)
     atom %= exp + opar + expr + cpar#, lambda h,s: ExpNode(s[3]) # Your code here!!! (add rule)
     atom %= rand + opar + cpar#, lambda h,s: RandNode() # Your code here!!! (add rule)
@@ -314,17 +320,20 @@ def test_grammar():
         (star,'\\'+star.Name),
         (div,div.Name),
         (pow,pow.Name),
+        (pow_star,'\\'+pow_star.Name+'\\'+pow_star.Name),
+        (function_,function_.Name),
         (arrow,arrow.Name),
-        (defx,defx.Name),
+        (function_,function_.Name),
         (printx,printx.Name),
         (sqrt,sqrt.Name),
         (sin,sin.Name),
         (cos,cos.Name),
-        (tan,tan.Name),
         (log,log.Name),
         (exp,exp.Name),
         (arroba,arroba.Name),
         (rand,rand.Name),
+        (okey,okey.Name),
+        (ckey,ckey.Name),
         (num, f'({nonzero_digits})(0|{nonzero_digits})*'),
         (idx, f'({letters})({letters}|0|{nonzero_digits})*')
     ],G.EOF)
@@ -334,13 +343,16 @@ def test_grammar():
     texts =['42;' ,'print(42);','print((((1 + 2) ^ 3) * 4) / 5);','print( "Hello :is+ the@  World" );',
             'print("The message is \"Hello World\"");','print("The meaning of life is " @ 42);',
             'print(sin(2 * PI) ^ 2 + cos(3 * PI / log(4, 64)));' ,
-            'print(42); print(sin(PI/2)); print("Hello World");' ]
+            '{print(42); print(sin(PI/2)); print("Hello World");}','function tan(x) => sin(x) / cos(x);',
+            'function cot(x) => 1 / tan(x);function tan(x) => sin(x) / cos(x);print(tan(PI) ** 2 + cot(PI) ** 2);',
+            'function operate(x, y) { print(x + y);print(x - y);print(x * y);print(x / y);}'
+        ]
 
     parser=LR1Parser(G)
     c=0
     for i in texts:
         c+=1
-        if c==8: 
+        if c==9: 
             print(i)
         tokens = lexer(i)
         tokens_type = []
