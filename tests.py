@@ -223,24 +223,31 @@ def test_grammar():
     G = Grammar()
     program = G.NonTerminal('<program>', startSymbol=True)
     stat_list, stat = G.NonTerminals('<stat_list> <stat>')
-    let_var, def_func, print_stat, arg_list = G.NonTerminals('<let-var> <def-func> <print-stat> <arg-list>')
+    asign_list, asign, let_var, def_func, def_func_block, print_stat, arg_list = G.NonTerminals('<asign-list> <asignment> <let-var> <def-func> <def-block> <print-stat> <arg-list>')
     expr, term, factor, atom, power= G.NonTerminals('<expr> <term> <factor> <atom> <power>')
-    func_call, expr_list, expr_str, block = G.NonTerminals('<func-call> <expr-list> <expr-str> <block-expr>')
+    func_call, expr_list, expr_str, block, block_list = G.NonTerminals('<func-call> <expr-list> <expr-str> <block-expr> <block-list>')
 
 
-    let, function_, printx = G.Terminals('let function print')
+    let, function_, printx, in_ = G.Terminals('let function print in')
     sqrt, sin, cos, tan, log, exp, rand = G.Terminals('sqrt sin cos tan log exp rand')
     semi, comma, opar, cpar, arrow, okey, ckey= G.Terminals('; , ( ) => { }')
     equal, plus, minus, star, div, pow, arroba, pow_star = G.Terminals('= + - * / ^ @ **') #######
-    idx, num, string_ = G.Terminals('id int str')
+    idx, num, string_ = G.Terminals('id num str')
 
     # Productions
 
     program %= stat_list#, lambda h,s: ProgramNode(s[1])
-    program %= block#, lambda h,s: ProgramNode(s[1] + s[2])
+    program %= block_list#, lambda h,s: ProgramNode(s[1] + s[2])
+
+    block_list %= block + block_list#, lambda h,s: BlockNode([]) # Your code here!!! (add rule)
+    block_list %= block#, lambda h,s: BlockNode([]) # Your code here!!! (add rule)
+
 
     block %= okey + stat_list + ckey#, lambda h,s: BlockNode([]) # Your code here!!! (add rule)
-    block %= okey + stat_list + ckey +semi#, lambda h,s: BlockNode([]) # Your code here!!! (add rule)
+    block %= def_func_block#, lambda h,s: BlockNode([]) # Your code here!!! (add rule)
+    block %= block + semi#, lambda h,s: BlockNode([]) # Your code here!!! (add rule)
+
+    def_func_block %= function_ + idx + opar + arg_list + cpar + okey + stat_list + ckey#, lambda h,s: FuncDeclarationNode(s[2], s[4], s[7]) # Your code here!!! (add rule)
 
     stat_list %= stat + semi#, lambda h,s: [s[1]] # Your code here!!! (add rule)
     stat_list %= stat + semi + stat_list#, lambda h,s: [s[1]] + s[3] # Your code here!!! (add rule)
@@ -250,10 +257,10 @@ def test_grammar():
     stat %= print_stat#, lambda h,s: s[1] # Your code here!!! (add rule)
     stat %= expr_str
 
-    let_var %= let + idx + equal + expr#, lambda h,s: VarDeclarationNode(s[2], s[4]) # Your code here!!! (add rule)
+    let_var %= let + asign_list + in_ + stat#, lambda h,s: VarDeclarationNode(s[2], s[4]) # Your code here!!! (add rule)
 
     def_func %= function_ + idx + opar + arg_list + cpar + arrow + expr#, lambda h,s: FuncDeclarationNode(s[2], s[4], s[7]) # Your code here!!! (add rule)
-    def_func %= function_ + idx + opar + arg_list + cpar + block#, lambda h,s: FuncDeclarationNode(s[2], s[4], s[6]) # Your code here!!! (add rule)
+    #def_func %= function_ + idx + opar + arg_list + cpar + okey + stat_list + ckey#, lambda h,s: FuncDeclarationNode(s[2], s[4], s[6]) # Your code here!!! (add rule)
 
     expr_str %= expr_str + arroba + expr#, lambda h,s: ConcatNode(s[1],s[3]) # Your code here!!! (add rule)
     expr_str %= expr_str + arroba + string_
@@ -262,6 +269,11 @@ def test_grammar():
 
     print_stat %= printx + opar + expr_str + cpar#, lambda h,s: PrintNode(s[2]) # Your code here!!! (add rule)
     #print_stat %= printx + opar + string_ + cpar#, lambda h,s: PrintNode(s[2]) # Your code here!!! (add rule)
+    asign %= idx + equal + expr_str#, lambda h,s: AsignNode(s[1],s[3]) # Your code here!!! (add rule)
+    
+    asign_list %= asign_list + comma + asign#, lambda h,s: [s[1]] + s[3] # Your code here!!! (add rule)
+    asign_list %= asign#, lambda h,s: s[1] # Your code here!!! (add rule)
+
 
     arg_list %= idx#, lambda h,s: [s[1]] # Your code here!!! (add rule)
     arg_list %= idx + comma + arg_list#, lambda h,s: [s[1]] + s[3] # Your code here!!! (add rule)
@@ -315,7 +327,6 @@ def test_grammar():
         (minus,minus.Name),
         (opar,'\\'+opar.Name),
         (cpar,'\\'+cpar.Name),
-        (let,let.Name),
         (equal,equal.Name),
         (star,'\\'+star.Name),
         (div,div.Name),
@@ -325,6 +336,8 @@ def test_grammar():
         (arrow,arrow.Name),
         (function_,function_.Name),
         (printx,printx.Name),
+        (let,let.Name),
+        (in_,in_.Name),
         (sqrt,sqrt.Name),
         (sin,sin.Name),
         (cos,cos.Name),
@@ -339,20 +352,24 @@ def test_grammar():
     ],G.EOF)
     #endregion
     
-    #Expressions
+    #Expressions Functions 
     texts =['42;' ,'print(42);','print((((1 + 2) ^ 3) * 4) / 5);','print( "Hello :is+ the@  World" );',
             'print("The message is \"Hello World\"");','print("The meaning of life is " @ 42);',
             'print(sin(2 * PI) ^ 2 + cos(3 * PI / log(4, 64)));' ,
             '{print(42); print(sin(PI/2)); print("Hello World");}','function tan(x) => sin(x) / cos(x);',
             'function cot(x) => 1 / tan(x);function tan(x) => sin(x) / cos(x);print(tan(PI) ** 2 + cot(PI) ** 2);',
-            'function operate(x, y) { print(x + y);print(x - y);print(x * y);print(x / y);}'
+            'function operate(x, y) { print(x + y);print(x - y);print(x * y);print(x / y);}',
+            'let msg = "Hello World" in print(msg);',
+            'let number = 42, text = "The meaning of life is" in print(text @ number);',
+            'let number = 42 in let text = "The meaning of life is" in print(text @ number);'
+
         ]
 
     parser=LR1Parser(G)
     c=0
     for i in texts:
         c+=1
-        if c==9: 
+        if c==12: 
             print(i)
         tokens = lexer(i)
         tokens_type = []
