@@ -154,15 +154,9 @@ def test_hulk():
     ], 'eof')
     
     G=Grammar()
-    boolean_expr =G.NonTerminal('boolean_expr',True)
-    and_,or_,not_,true,false = G.Terminals('and or not true false')
-    boolean_expr %= true
-    boolean_expr %=false
-    boolean_expr %= boolean_expr + and_ + boolean_expr
-    boolean_expr %= boolean_expr + or_ + boolean_expr  
-    boolean_expr %= not_ + boolean_expr
-
-    text= 'True & False | ! True'
+    
+    
+ # text= 'True & False | ! True'
 
     
 
@@ -176,4 +170,4 @@ def test_hulk():
 
 #test_parser()
 #test_parser_lexer()
-test_hulk()
+#test_hulk()
