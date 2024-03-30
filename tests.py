@@ -286,7 +286,7 @@ def hulk_grammar():
     boolean_expr, boolean_term = G.NonTerminals('<boolean_expr> <boolean_term>')
     print_expr = G.NonTerminal('<print_expr>')
     let_expr, assign_list, assign = G.NonTerminals('<let_expr> <assign_list> <assign>')
-    destruct_expr, dest = G.NonTerminals('<destruct_expr> <dest>')
+    destruct_expr = G.NonTerminal('<destruct_expr>')
     comparative_operator = G.NonTerminal('<comparative_operator>')
     comparable_expr = G.NonTerminal('<comparable_expr>')
     str_expr = G.NonTerminal('<str_expr>')
@@ -356,11 +356,8 @@ def hulk_grammar():
     let_expr %= let + assign_list + in_ + expr
     let_expr %= let + assign_list + in_ + block_expr
 
-    destruct_expr %= dest 
-    destruct_expr %= dest + comma + destruct_expr
-
-    dest %= id_ + dest_op + expr
-
+    destruct_expr %= id_ + dest_op + expr
+   
     assign_list %= assign
     assign_list %= assign + comma + assign_list
 
@@ -462,13 +459,15 @@ def hulk_grammar():
         (let, let.Name),
         (in_, in_.Name),
         (equal, equal.Name),
-        (dest, dest.Name),
+        (dest_op, dest_op.Name),
         (id_, f'({letters})({letters}|0|{nonzero_digits})*')
     ],G.EOF)
 
     texts=['let number = 42, text = "The meaning of life is" in print(text);',
             'let number = 42 in let text = "The meaning of life is" in print(number);',
-            'let a = 5, b = 10, c = 20 in {print(a);};']
+            'let a = 5, b = 10, c = 20 in {print(a);};', 
+            'let a = 0 in {print(a); a := 1; print(a);};',
+            'let a = 0 in let b = a := 1 in { print(a); print(b); };']
 
     parser=LR1Parser(G)
     c=0
