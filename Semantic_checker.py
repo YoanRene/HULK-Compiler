@@ -77,10 +77,13 @@ class BinaryNode(ExpressionNode):
         self.right = right
 
 class ConstantNumNode(AtomicNode):
-    pass
+    def evaluate(self):
+        return float(self.lex)
 
 class VariableNode(AtomicNode):
-    pass
+    def evaluate(self):
+        # Aquí implementa la lógica para obtener el valor de la variable
+        pass
 
 class CallNode(AtomicNode):
     def __init__(self, idx, args):
@@ -88,16 +91,20 @@ class CallNode(AtomicNode):
         self.args = args
 
 class PlusNode(BinaryNode):
-    pass
+    def evaluate(self):
+        return self.left.evaluate() + self.right.evaluate()
 
 class MinusNode(BinaryNode):
-    pass
+    def evaluate(self):
+        return self.left.evaluate() - self.right.evaluate()
 
 class StarNode(BinaryNode):
-    pass
+    def evaluate(self):
+        return self.left.evaluate() * self.right.evaluate()
 
 class DivNode(BinaryNode):
-    pass
+    def evaluate(self):
+        return self.left.evaluate() / self.right.evaluate()
 
 
 ########ME imagino que haya que poner mas clases de nodes
