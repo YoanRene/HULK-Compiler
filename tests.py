@@ -284,6 +284,11 @@ def hulk_grammar():
     expr, statment_list, stat, inline_function, block_function = G.NonTerminals('<expr> <statment_list> <stat> <inline_function> <block_function>')
     num_expr, term, factor, constant = G.NonTerminals('<num_expr> <term> <factor> <constant>')
     boolean_expr, boolean_term = G.NonTerminals('<boolean_expr> <boolean_term>')
+    print_expr = G.NonTerminal('<print_expr>')
+    let_expr, assign_list, assign = G.NonTerminals('<let_expr> <assign_list> <assign>')
+    destruct_expr, dest = G.NonTerminals('<destruct_expr> <dest>')
+    comparative_operator = G.NonTerminal('<comparative_operator>')
+    comparable_expr = G.NonTerminal('<comparable_expr>')
     str_expr = G.NonTerminal('<str_expr>')
     math_function = G.NonTerminal('<math_function>')
     function_call, params_list = G.NonTerminals('<function_call> <params_list>')
@@ -298,7 +303,8 @@ def hulk_grammar():
     plus, minus, star, div, power = G.Terminals(' + - * / ^')
     sqrt, sen, cos, log, exp = G.Terminals('sqrt sin cos log exp')
     num, euler, pi = G.Terminals('num Euler Pi')
-    str_ = G.Terminal('str')
+    str_, concat, print_ = G.Terminals('str @ print')
+    equal, in_, let, dest_op = G.Terminals('= in let :=')
 
     block_list, block_expr, expr_list = G.NonTerminals('<block_list> <block_expr> <expr_list>')
 
@@ -329,28 +335,50 @@ def hulk_grammar():
     params_list %= expr
     params_list %= expr + comma + params_list
 
-    expr %= num_expr
+    expr %= comparable_expr
     expr %= boolean_expr
-    expr %= str_expr
+    expr %= print_expr
+    expr %= let_expr
+    expr %= destruct_expr
+
+    comparable_expr %= num_expr
+    comparable_expr %= str_expr
 
     #String expressions
     str_expr %= str_
+    #str_expr %= str_ + concat + num_expr
+    #str_expr %= str_ + concat + boolean_expr
+    #str_expr %= str_ + concat + str_
+
+    print_expr %= print_ + opar + str_expr + cpar
+    print_expr %= print_ + opar + id_ + cpar
+
+    let_expr %= let + assign_list + in_ + expr
+    let_expr %= let + assign_list + in_ + block_expr
+
+    destruct_expr %= dest 
+    destruct_expr %= dest + comma + destruct_expr
+
+    dest %= id_ + dest_op + expr
+
+    assign_list %= assign
+    assign_list %= assign + comma + assign_list
+
+    assign %= id_ + equal + expr
+
+    #Comparative operators
+
+    comparative_operator %= equals
+    comparative_operator %= not_equals
+    comparative_operator %= greater
+    comparative_operator %= less
+    comparative_operator %= greater_equals
+    comparative_operator %= less_equals
 
     #Boolean expressions
-    boolean_expr %= boolean_expr + equals + boolean_term
-    boolean_expr %= boolean_expr + not_equals + boolean_term
-    #boolean_expr %= num_expr + greater_equals + num_expr
-    #boolean_expr %= num_expr + less_equals + num_expr
-    #boolean_expr %= num_expr + greater + num_expr
-    #boolean_expr %= num_expr + less + num_expr
-    #boolean_expr %= num_expr + equals + num_expr
-    #boolean_expr %= num_expr + not_equals + num_expr
-    boolean_expr %= str_expr + equals + str_expr
-    boolean_expr %= str_expr + not_equals + str_expr
-    boolean_expr %= str_expr + greater_equals + str_expr
-    boolean_expr %= str_expr + less_equals + str_expr
-    boolean_expr %= str_expr + greater + str_expr
-    boolean_expr %= str_expr + less + str_expr
+    boolean_expr %= boolean_expr + comparative_operator + boolean_term
+    boolean_expr %= comparable_expr + comparative_operator + comparable_expr
+    boolean_expr %= boolean_expr + comparative_operator + comparable_expr
     boolean_expr %= boolean_expr + and_ + boolean_term
     boolean_expr %= boolean_expr + or_ + boolean_term
     boolean_expr %= not_ + boolean_term
@@ -429,10 +457,18 @@ def hulk_grammar():
         (euler, euler.Name),
         (pi, pi.Name),
         (str_, vari),
+        (concat, concat.Name),
+        (print_, print_.Name),
+        (let, let.Name),
+        (in_, in_.Name),
+        (equal, equal.Name),
+        (dest, dest.Name),
         (id_, f'({letters})({letters}|0|{nonzero_digits})*')
     ],G.EOF)
 
-    texts=['"lala" == "lele";']
+    texts=['let number = 42, text = "The meaning of life is" in print(text);',
+            'let number = 42 in let text = "The meaning of life is" in print(number);',
+            'let a = 5, b = 10, c = 20 in {print(a);};']
 
     parser=LR1Parser(G)
     c=0
