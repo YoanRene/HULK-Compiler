@@ -284,6 +284,7 @@ def hulk_grammar():
     expr, statment_list, stat, inline_function, block_function = G.NonTerminals('<expr> <statment_list> <stat> <inline_function> <block_function>')
     num_expr, term, factor, constant = G.NonTerminals('<num_expr> <term> <factor> <constant>')
     boolean_expr, boolean_term = G.NonTerminals('<boolean_expr> <boolean_term>')
+    str_expr = G.NonTerminal('<str_expr>')
     math_function = G.NonTerminal('<math_function>')
     function_call, params_list = G.NonTerminals('<function_call> <params_list>')
 
@@ -297,6 +298,7 @@ def hulk_grammar():
     plus, minus, star, div, power = G.Terminals(' + - * / ^')
     sqrt, sen, cos, log, exp = G.Terminals('sqrt sin cos log exp')
     num, euler, pi = G.Terminals('num Euler Pi')
+    str_ = G.Terminal('str')
 
     block_list, block_expr, expr_list = G.NonTerminals('<block_list> <block_expr> <expr_list>')
 
@@ -329,16 +331,26 @@ def hulk_grammar():
 
     expr %= num_expr
     expr %= boolean_expr
+    expr %= str_expr
+
+    #String expressions
+    str_expr %= str_
 
     #Boolean expressions
     boolean_expr %= boolean_expr + equals + boolean_term
     boolean_expr %= boolean_expr + not_equals + boolean_term
-    boolean_expr %= num_expr + greater_equals + num_expr
-    boolean_expr %= num_expr + less_equals + num_expr
-    boolean_expr %= num_expr + greater + num_expr
-    boolean_expr %= num_expr + less + num_expr
-    boolean_expr %= num_expr + equals + num_expr
-    boolean_expr %= num_expr + not_equals + num_expr
+    #boolean_expr %= num_expr + greater_equals + num_expr
+    #boolean_expr %= num_expr + less_equals + num_expr
+    #boolean_expr %= num_expr + greater + num_expr
+    #boolean_expr %= num_expr + less + num_expr
+    #boolean_expr %= num_expr + equals + num_expr
+    #boolean_expr %= num_expr + not_equals + num_expr
+    boolean_expr %= str_expr + equals + str_expr
+    boolean_expr %= str_expr + not_equals + str_expr
+    boolean_expr %= str_expr + greater_equals + str_expr
+    boolean_expr %= str_expr + less_equals + str_expr
+    boolean_expr %= str_expr + greater + str_expr
+    boolean_expr %= str_expr + less + str_expr
     boolean_expr %= boolean_expr + and_ + boolean_term
     boolean_expr %= boolean_expr + or_ + boolean_term
     boolean_expr %= not_ + boolean_term
@@ -380,7 +392,7 @@ def hulk_grammar():
     nonzero_digits = '|'.join(str(n) for n in range(1,10))
     letters = '|'.join(chr(n) for n in range(ord('a'),ord('z')+1))
     letters = letters +'|'+'|'.join(chr(n) for n in range(ord('A'),ord('Z')+1))  
-    symbols="!|@|%|^|&|\\*|_|+|-|/|:|;|<|>|=|,|.|?|~|`|\\(|\\)|[|]|{|}|#|'|\\||¿|¡|º|ª|¬"
+    symbols="!|@|%|^|&|\\*|_|+|-|/|:|;|\\<|\\>|\\=|,|.|?|~|`|\\(|\\)|[|]|{|}|#|'|\\||¿|¡|º|ª|¬"
     vari = f'\\"({letters}|{nonzero_digits}|{symbols}| |\\")*\\"'
     lexer = Lexer([
         ('space', '  *'),
@@ -416,10 +428,11 @@ def hulk_grammar():
         (num, f'({nonzero_digits})(0|{nonzero_digits})*|0'),
         (euler, euler.Name),
         (pi, pi.Name),
+        (str_, vari),
         (id_, f'({letters})({letters}|0|{nonzero_digits})*')
     ],G.EOF)
 
-    texts=['lala != mama(x);']
+    texts=['"lala" == "lele";']
 
     parser=LR1Parser(G)
     c=0
