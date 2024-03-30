@@ -283,11 +283,16 @@ def hulk_grammar():
     program = G.NonTerminal('<program>',True)
     expr, statment_list, stat, inline_function, block_function = G.NonTerminals('<expr> <statment_list> <stat> <inline_function> <block_function>')
     num_expr, term, factor, constant = G.NonTerminals('<num_expr> <term> <factor> <constant>')
+    boolean_expr, boolean_term = G.NonTerminals('<boolean_expr> <boolean_term>')
     math_function = G.NonTerminal('<math_function>')
     function_call, params_list = G.NonTerminals('<function_call> <params_list>')
 
     function_ = G.Terminal('function')
     opar, cpar, okey, ckey, id_, arrow, semi, comma = G.Terminals(' ( ) { } id => ; ,')
+
+    true_, false_ = G.Terminals('true false')
+    and_, or_, not_ = G.Terminals('& \\| !')
+    equals, not_equals, greater, less, greater_equals, less_equals = G.Terminals('== != > < >= <=')
 
     plus, minus, star, div, power = G.Terminals(' + - * / ^')
     sqrt, sen, cos, log, exp = G.Terminals('sqrt sin cos log exp')
@@ -323,7 +328,27 @@ def hulk_grammar():
     params_list %= expr + comma + params_list
 
     expr %= num_expr
+    expr %= boolean_expr
 
+    #Boolean expressions
+    boolean_expr %= boolean_expr + equals + boolean_term
+    boolean_expr %= boolean_expr + not_equals + boolean_term
+    boolean_expr %= num_expr + greater_equals + num_expr
+    boolean_expr %= num_expr + less_equals + num_expr
+    boolean_expr %= num_expr + greater + num_expr
+    boolean_expr %= num_expr + less + num_expr
+    boolean_expr %= num_expr + equals + num_expr
+    boolean_expr %= num_expr + not_equals + num_expr
+    boolean_expr %= boolean_expr + and_ + boolean_term
+    boolean_expr %= boolean_expr + or_ + boolean_term
+    boolean_expr %= not_ + boolean_term
+    boolean_expr %= boolean_term
+
+    boolean_term %= opar + boolean_expr + cpar
+    boolean_term %= true_
+    boolean_term %= false_
+
+    # Numerical expressions
     num_expr %= num_expr + plus + term
     num_expr %= num_expr + minus + term 
     num_expr %= term
@@ -377,13 +402,24 @@ def hulk_grammar():
         (arrow,arrow.Name),
         (okey,okey.Name),
         (ckey,ckey.Name),
+        (not_, not_.Name),
+        (and_, and_.Name),
+        (or_, or_.Name),
+        (true_,true_.Name),
+        (false_,false_.Name),
+        (equals,equals.Name),
+        (not_equals,not_equals.Name),
+        (greater,greater.Name),
+        (less,less.Name),
+        (greater_equals,greater_equals.Name),
+        (less_equals,less_equals.Name),
         (num, f'({nonzero_digits})(0|{nonzero_digits})*|0'),
         (euler, euler.Name),
         (pi, pi.Name),
         (id_, f'({letters})({letters}|0|{nonzero_digits})*')
     ],G.EOF)
 
-    texts=['function operate(x, y) {x + y;}' ,'sqrt(54 * a) + 15;', '12 / 23;', '44 ^ 2;']
+    texts=['lala != mama(x);']
 
     parser=LR1Parser(G)
     c=0
