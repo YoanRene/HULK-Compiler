@@ -76,240 +76,91 @@ def test_parser():
 
     assert str(derivation) == '[A -> int, A -> int + A, A -> int, A -> int + A, E -> A = A]'
 
-def test_parser_lexer():
-
-    #lexeando
-
-    nonzero_digits = '|'.join(str(n) for n in range(1,10))
-    letters = '|'.join(chr(n) for n in range(ord('a'),ord('z')+1))
-    lexer = Lexer([
-        ('num', f'({nonzero_digits})(0|{nonzero_digits})*'),
-        ('for' , 'for'),
-        ('foreach' , 'foreach'),
-        ('space', '  *'),
-        ('plus','+'),
-        ('equal','='),
-        ('id', f'({letters})({letters}|0|{nonzero_digits})*')
-    ], 'eof')
-    G= Grammar()
-
-    #text = '5465 for 45foreach fore'
-
-    text= '2+3=4+4'
-    tokens = lexer(text)
-    # assert [t.token_type for t in tokens] == ['num', 'space', 'for', 'space', 'num', 'foreach', 'space', 'id', 'eof']
-    # assert [t.lex for t in tokens] == ['5465', ' ', 'for', ' ', '45', 'foreach', ' ', 'fore', '$']
-
-    E = G.NonTerminal('E', True)
-    A = G.NonTerminal('A')
-    equal, plus, num , for_,foreach , id, space = G.Terminals('= + int for foreach id space')
-
-    E %=  A + equal + A | num
-    A %= num + plus + A | num
-
-    types=[]
-
-    ####NO#####
-
-    for t in tokens:
-        if t.token_type == 'num':
-            types.append(num)
-        elif t.token_type == 'for':
-            types.append(for_)
-        elif t.token_type == 'foreach':
-            types.append(foreach)
-        elif t.token_type == 'id':
-            types.append(id)
-        elif t.token_type == 'plus':
-            types.append(plus)
-        elif t.token_type == 'eof':
-            types.append(G.EOF)
-        elif t.token_type== 'equal':
-            types.append(equal)
-        else:
-            types.append(space)
-
-    ##########
-
-
-    #parseando
-
-    parser = LR1Parser(G, verbose=True)
-
-    derivation = parser(types)
-
-    print(str(derivation))
-
-    #assert str(derivation) == '[A -> int, A -> int + A, A -> int, A -> int + A, E -> A = A]'
-
-def test_hulk():
-
-    lexer = Lexer([
-        ('and','&'),
-        ('space', '  *'),
-        ('or','\|'),
-        ('not','!'),
-        ('true','True'),
-        ('false','False'),
-    ], 'eof')
-    
-    G=Grammar()
-    boolean_expr =G.NonTerminal('boolean_expr',True)
-    and_,or_,not_,true,false = G.Terminals('and or not true false')
-    boolean_expr %= true
-    boolean_expr %=false
-    boolean_expr %= boolean_expr + and_ + boolean_expr
-    boolean_expr %= boolean_expr + or_ + boolean_expr  
-    boolean_expr %= not_ + boolean_expr
-
-    text= 'True & False | ! True'
-
-    tokens = lexer(text)
-    for i in tokens:
-        print(i.token_type)
-
-
-
-def loop_grammar():
-    G=Grammar()
-
-    lexer = Lexer([
-        ('for','for'),
-        ('space', '  *'),
-        ('while','while'),
-        ('not','!'),
-        ('true','True'),
-        ('false','False'),
-        ('left','\('),
-        ('right','\)'),
-
-    ], 'eof')
-
-    program = G.NonTerminal('<program>', startSymbol=True)
-    bool_expr = G.NonTerminal('<bool-expr>')
-    expr = G.NonTerminal('<expr>')
-    block_expr = G.NonTerminal('<block-expr>')
-    conditional_expr, loop_expr = G.NonTerminals('<conditional-expr> <loop-expr>')
-    while_loop, for_loop = G.NonTerminals('<while-loop> <for-loop>')
-
-    # Terminals
-    wloop, floop = G.Terminals('WHILE FOR') 
-    boolx = G.Terminal('bool')
-    eof = G.EOF
-
-    # Productions
-    program %= block_expr
-    block_expr %= block_expr + expr
-    block_expr %= expr
-    expr %= bool_expr
-    expr %=loop_expr
-    expr %=conditional_expr
-    bool_expr %= boolx
-    loop_expr %= while_loop
-    loop_expr %= for_loop
-    while_loop %= wloop + boolx + block_expr
-    for_loop %= floop + boolx + block_expr
-    conditional_expr %= boolx + block_expr + block_expr
-
-    text= 'while True for False'
-
-    tokens = lexer(text)
-    for i in tokens:
-        print(i.token_type)
-
-
 def test_grammar():
     #region Gramatica
     G = Grammar()
     program = G.NonTerminal('<program>', startSymbol=True)
     stat_list, stat = G.NonTerminals('<stat_list> <stat>')
-    asign_list, asign, let_var, def_func, def_func_block, print_stat, arg_list = G.NonTerminals('<asign-list> <asignment> <let-var> <def-func> <def-block> <print-stat> <arg-list>')
-    expr, term, factor, atom, power= G.NonTerminals('<expr> <term> <factor> <atom> <power>')
-    func_call, expr_list, expr_str, block, block_list = G.NonTerminals('<func-call> <expr-list> <expr-str> <block-expr> <block-list>')
+    extends_expr, id_extension, inherits_id_epsilon, args_in_par_epsilon ,args,args_epsilon,attr_list, attr,attr_f, let_var, def_func, def_func_block, print_stat, params,params_Epsilon = G.NonTerminals('<extends-expr> <id-extension> <inherits-id-epsilon> <args-in-par-epsilon> <args> <args-epsilon> <attr-list> <attr> <attr-f> <let-var> <def-func> <def-block> <print-stat> <params-list> <params-list-f>')
+    aritm_expr, comp_expr, expr, term, factor, atom, power= G.NonTerminals('<aritm-expr> <comp-expr> <expr> <term> <factor> <atom> <power>')
+    while_expr, iterable, expr_body, for_expr, method_protocol,method_protocol_list,protocol_expr, method_attr_list, method_list, method, body, func_call,type_expr, expr_list, expr_str, block, block_list, params_in_par_epsilon = G.NonTerminals('<while-expr> <iterable> <expr-body> <for-expr> <method-protocol> <method-protocol-list> <protocol-expr> <method-attr-list> <method-list> <method> <body> <func-call> <type-expr> <expr-list> <expr-str> <block-expr> <block-list> <params-in-par-epsilon>')
 
 
-    let, function_, printx, in_ = G.Terminals('let function print in')
+    let, function_, printx, in_, for_, while_ = G.Terminals('let function print in for while')
     sqrt, sin, cos, tan, log, exp, rand = G.Terminals('sqrt sin cos tan log exp rand')
     semi, comma, opar, cpar, arrow, okey, ckey= G.Terminals('; , ( ) => { }')
-    equal, plus, minus, star, div, pow, arroba, pow_star = G.Terminals('= + - * / ^ @ **') #######
-    idx, num, string_ = G.Terminals('id num str')
+    and_, or_ ,not_ = G.Terminals('& | !')
+    greater, greater_equals, equals, less, less_equals, not_equals = G.Terminals('> >= == < <= !=')
+    equal, plus, minus, star, div, pow, arroba, pow_star,double_dot = G.Terminals('= + - * / ^ @ ** :') #######
+    id_, num, string_ = G.Terminals('id num str')
+    type_, protocol, inherits, extends = G.Terminals('type protocol inherits extends')
 
     # Productions
 
-    program %= stat_list#, lambda h,s: ProgramNode(s[1])
-    program %= block_list#, lambda h,s: ProgramNode(s[1] + s[2])
+    program %= expr + semi | type_expr | protocol_expr | for_expr + semi | while_expr + semi
 
-    block_list %= block + block_list#, lambda h,s: BlockNode([]) # Your code here!!! (add rule)
-    block_list %= block#, lambda h,s: BlockNode([]) # Your code here!!! (add rule)
+    type_expr %= type_ + id_ + params_in_par_epsilon + inherits_id_epsilon + okey + attr_list + ckey
 
-
-    block %= okey + stat_list + ckey#, lambda h,s: BlockNode([]) # Your code here!!! (add rule)
-    block %= def_func_block#, lambda h,s: BlockNode([]) # Your code here!!! (add rule)
-    block %= block + semi#, lambda h,s: BlockNode([]) # Your code here!!! (add rule)
-
-    def_func_block %= function_ + idx + opar + arg_list + cpar + okey + stat_list + ckey#, lambda h,s: FuncDeclarationNode(s[2], s[4], s[7]) # Your code here!!! (add rule)
-
-    stat_list %= stat + semi#, lambda h,s: [s[1]] # Your code here!!! (add rule)
-    stat_list %= stat + semi + stat_list#, lambda h,s: [s[1]] + s[3] # Your code here!!! (add rule)
-
-    stat %= let_var#, lambda h,s: s[1] # Your code here!!! (add rule)
-    stat %= def_func#, lambda h,s: s[1] # Your code here!!! (add rule)
-    stat %= print_stat#, lambda h,s: s[1] # Your code here!!! (add rule)
-    stat %= expr_str
-
-    let_var %= let + asign_list + in_ + stat#, lambda h,s: VarDeclarationNode(s[2], s[4]) # Your code here!!! (add rule)
-
-    def_func %= function_ + idx + opar + arg_list + cpar + arrow + expr#, lambda h,s: FuncDeclarationNode(s[2], s[4], s[7]) # Your code here!!! (add rule)
-    #def_func %= function_ + idx + opar + arg_list + cpar + okey + stat_list + ckey#, lambda h,s: FuncDeclarationNode(s[2], s[4], s[6]) # Your code here!!! (add rule)
-
-    expr_str %= expr_str + arroba + expr#, lambda h,s: ConcatNode(s[1],s[3]) # Your code here!!! (add rule)
-    expr_str %= expr_str + arroba + string_
-    expr_str %= string_
-    expr_str %= expr#, lambda h,s: s[1] # Your code here!!! (add rule)
-
-    print_stat %= printx + opar + expr_str + cpar#, lambda h,s: PrintNode(s[2]) # Your code here!!! (add rule)
-    #print_stat %= printx + opar + string_ + cpar#, lambda h,s: PrintNode(s[2]) # Your code here!!! (add rule)
-    asign %= idx + equal + expr_str#, lambda h,s: AsignNode(s[1],s[3]) # Your code here!!! (add rule)
+    id_extension %= double_dot + id_ | G.Epsilon
     
-    asign_list %= asign_list + comma + asign#, lambda h,s: [s[1]] + s[3] # Your code here!!! (add rule)
-    asign_list %= asign#, lambda h,s: s[1] # Your code here!!! (add rule)
+    params %= id_ + id_extension | id_ + id_extension + comma + params 
 
+    params_Epsilon %= params | G.Epsilon
 
-    arg_list %= idx#, lambda h,s: [s[1]] # Your code here!!! (add rule)
-    arg_list %= idx + comma + arg_list#, lambda h,s: [s[1]] + s[3] # Your code here!!! (add rule)
+    params_in_par_epsilon %= opar + params_Epsilon + cpar | G.Epsilon
 
-    expr %= expr + plus + term#, lambda h,s: PlusNode(s[1],s[3]) # Your code here!!! (add rule)
-    expr %= expr + minus + term#, lambda h,s: MinusNode(s[1],s[3]) # Your code here!!! (add rule)
-    expr %= term#, lambda h,s: s[1] # Your code here!!! (add rule)
+    args %= expr | expr + comma + args 
 
-    term %= term + star + power#, lambda h,s: StarNode(s[1],s[3]) # Your code here!!! (add rule)
-    term %= term + div + power#, lambda h,s: DivNode(s[1],s[3]) # Your code here!!! (add rule)
-    term %= power#, lambda h,s: s[1] # Your code here!!! (add rule)
+    args_epsilon %= args | G.Epsilon
 
+    args_in_par_epsilon %= opar + args_epsilon + cpar | G.Epsilon
 
-    power %= power + pow_star + factor#, lambda h,s: PowNode(s[1],s[3]) # Your code here!!! (add rule)
-    power %= power + pow + factor#, lambda h,s: PowNode(s[1],s[3]) # Your code here!!! (add rule)
-    power %= factor#, lambda h,s: s[1] # Your code here!!! (add rule)
-    
-    factor %= atom#, lambda h,s: s[1] # Your code here!!! (add rule)
-    factor %= opar + expr + cpar#, lambda h,s: s[2] # Your code here!!! (add rule)
+    inherits_id_epsilon %= inherits + id_ + args_in_par_epsilon | G.Epsilon
+
+    attr %= id_ + id_extension + equal + expr 
+
+    attr_list %= attr + semi + attr_list | G.Epsilon 
+
+    expr_list %= expr + semi | expr + semi + expr_list 
+
+    method %= id_ + opar + params_Epsilon + cpar + id_extension + body  
+
+    method_list %= method + method_list | G.Epsilon
+
+    body %= arrow + expr + semi | okey + expr_list + ckey
+
+    protocol_expr %= protocol + id_ + extends_expr + okey + method_protocol_list + ckey
+
+    method_protocol %= id_ + opar + params_Epsilon + cpar + id_extension + semi
+
+    method_protocol_list %= method_protocol + method_protocol_list | G.Epsilon
+
+    extends_expr %= extends + id_ | G.Epsilon
+
+    for_expr %= for_ + opar + id_ + in_ + iterable + cpar + expr_body
+
+    while_expr %= while_ + opar + iterable + cpar + expr_body 
+
+    iterable %= id_ + args_in_par_epsilon
+
+    expr_body %= okey + expr_list + ckey
+    expr_body %= expr
+
+    expr %= num
+    expr %= id_
+
     
 
-    atom %= num#, lambda h,s: ConstantNumNode(s[1]) # Your code here!!! (add rule)
-    atom %= idx#, lambda h,s: VariableNode(s[1]) # Your code here!!! (add rule)
-    atom %= func_call#, lambda h,s: s[1] # Your code here!!! (add rule)
-    atom %= sqrt + opar + expr + cpar#, lambda h,s: SqrtNode(s[3]) # Your code here!!! (add rule)
-    atom %= sin + opar + expr + cpar#, lambda h,s: SinNode(s[3]) # Your code here!!! (add rule)
-    atom %= cos + opar + expr + cpar#, lambda h,s: CosNode(s[3]) # Your code here!!! (add rule)
-    atom %= log + opar + expr + comma + expr + cpar#, lambda h,s: LogNode(s[3]) # Your code here!!! (add rule)
-    atom %= exp + opar + expr + cpar#, lambda h,s: ExpNode(s[3]) # Your code here!!! (add rule)
-    atom %= rand + opar + cpar#, lambda h,s: RandNode() # Your code here!!! (add rule)
+    # expr %= expr + and_ + comp_expr | expr + or_ + comp_expr | not_ + comp_expr | comp_expr
 
+    # comp_expr %= comp_expr + equals + aritm_expr | comp_expr + not_equals + aritm_expr | comp_expr + less + aritm_expr | comp_expr + less_equals + aritm_expr | comp_expr + greater_equals + aritm_expr | comp_expr + greater + aritm_expr | aritm_expr
 
-    func_call %= idx + opar + expr_list + cpar#, lambda h,s: CallNode(s[1], s[3]) # Your code here!!! (add rule)
+    # aritm_expr %= aritm_expr + plus + term | aritm_expr + minus + term | term
+    
+    # term %= term + star + factor | term + div + factor | factor
 
-    expr_list %= expr#, lambda h,s: [s[1]] # Your code here!!! (add rule)
-    expr_list %= expr + comma + expr_list#, lambda h,s: [s[1]] + s[3] # Your code here!!! (add rule)
+    # factor %= num | opar + expr + cpar  
+
 
     #endregion
     #region Lexer
@@ -324,6 +175,15 @@ def test_grammar():
         (semi,';'),
         (comma,','),
         (plus,plus.Name),
+        (and_,and_.Name),
+        (or_,'\\'+or_.Name),
+        (not_,not_.Name),
+        (equals,equals.Name),
+        (not_equals,not_equals.Name),
+        (greater,greater.Name),
+        (greater_equals,greater_equals.Name),
+        (less,less.Name),
+        (less_equals,less_equals.Name),
         (minus,minus.Name),
         (opar,'\\'+opar.Name),
         (cpar,'\\'+cpar.Name),
@@ -337,18 +197,25 @@ def test_grammar():
         (function_,function_.Name),
         (printx,printx.Name),
         (let,let.Name),
+        (for_,for_.Name),
+        (while_,while_.Name),
         (in_,in_.Name),
         (sqrt,sqrt.Name),
         (sin,sin.Name),
         (cos,cos.Name),
         (log,log.Name),
         (exp,exp.Name),
+        (double_dot,double_dot.Name),
         (arroba,arroba.Name),
         (rand,rand.Name),
         (okey,okey.Name),
         (ckey,ckey.Name),
-        (num, f'({nonzero_digits})(0|{nonzero_digits})*'),
-        (idx, f'({letters})({letters}|0|{nonzero_digits})*')
+        (type_,type_.Name),
+        (protocol,protocol.Name),
+        (extends,extends.Name),
+        (inherits,inherits.Name),
+        (num, f'({nonzero_digits})(0|{nonzero_digits})*|0'),
+        (id_, f'({letters})({letters}|0|{nonzero_digits})*')
     ],G.EOF)
     #endregion
     
@@ -365,9 +232,13 @@ def test_grammar():
 
         ]
 
+    texts1 = ['protocol Equalable extends Hasheable { equals(other: Object):Boolean;}',
+              'while (x) { 42;};',
+              'for (x in range(0,10)) x;'  ]
+
     parser=LR1Parser(G)
     c=0
-    for i in texts:
+    for i in texts1:
         c+=1
         if c==12: 
             print(i)
