@@ -16,10 +16,11 @@ class ShiftReduceParser:
     def _build_parsing_table(self):
         raise NotImplementedError()
 
-    def __call__(self, w):
+    def __call__(self, w,get_shift_reduce=False):
         stack = [ 0 ]
         cursor = 0
         output = []
+        operations=[]
         
         while True:
             state = stack[-1]
@@ -35,11 +36,13 @@ class ShiftReduceParser:
             action, tag = self.action[state, lookahead.Name]
             # Your code here!!! (Shift case)
             if action == self.SHIFT:
+                operations.append(self.SHIFT)
                 cursor -= -1
                 stack.append(tag)
                 continue
             # Your code here!!! (Reduce case)
             if action == self.REDUCE:
+                operations.append(self.REDUCE)
                 if not tag.Right.IsEpsilon:
                     for i in range(len(tag.Right)):
                         stack.pop()
@@ -51,9 +54,54 @@ class ShiftReduceParser:
             # Your code here!!! (OK case)
             if action == self.OK:
                 #output.append(tag)
-                return output
+                return output if not get_shift_reduce else(output,operations)
             # Your code here!!! (Invalid case)
             return None
+        
+
+
+#region lo del profe
+        ###########el call del profe#############
+#          def __call__(self,w,get_shift_reduce=False):
+#   stack=[0]
+#   cursor=0
+#   output=[]
+#   operations=[]
+#   while True:
+#    state=stack[-1]
+#    lookahead=w[cursor]
+#    if self.verbose:print(stack,'<---||--->',w[cursor:])
+#    if(state,lookahead)not in self.action:
+#     print((state,lookahead))
+#     print("Error. Aborting...")
+#     return None
+#    action,tag=self.action[state,lookahead]
+#    if action==self.SHIFT:
+#     operations.append(self.SHIFT)
+#     stack+=[lookahead,tag]
+#     cursor+=1
+#    elif action==self.REDUCE:
+#     operations.append(self.REDUCE)
+#     output.append(tag)
+#     head,body=tag
+#     for symbol in reversed(body):
+#      stack.pop()
+#      assert stack.pop()==symbol
+#     state=stack[-1]
+#     goto=self.goto[state,head]
+#     stack+=[head,goto]
+#    elif action==self.OK:
+#     stack.pop()
+#     assert stack.pop()==self.G.startSymbol
+#     assert len(stack)==1
+#     return output if not get_shift_reduce else(output,operations)
+#    else:
+#     raise Exception('Invalid action!!!')
+
+        ##########################################
+
+#endregion
+
 
 def compress(items):
     centers = {}
