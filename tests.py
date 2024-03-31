@@ -334,10 +334,10 @@ def hulk_grammar():
 
     #########################################
 
-    program %= statment_list + expr
+    program %= statment_list + expr + semi
     program %= statment_list
-    #program %= comparable_expr + semi ######Estoy obligando al punto y coma
-    #program %= boolean_expr + semi ######Estoy obligando al punto y coma
+    program %= comparable_expr + semi ######Estoy obligando al punto y coma
+    program %= boolean_expr + semi ######Estoy obligando al punto y coma
     program %= let_expr + semi
     program %= for_expr + semi
 
@@ -348,11 +348,11 @@ def hulk_grammar():
     stat %= type_expr
     stat %= protocol_expr
 
-    #inline_function %= function_ + id_ + opar + expr_list + cpar + arrow + expr + semi
-    #inline_function %= function_ + id_ + opar + cpar + arrow + expr + semi
+    inline_function %= function_ + id_ + opar + expr_list + cpar + arrow + expr + semi
+    inline_function %= function_ + id_ + opar + cpar + arrow + expr + semi
 
-    #block_function %= function_ + id_ + opar + expr_list + cpar + block_expr 
-    #block_function %=  function_ + id_ + opar + cpar + block_expr
+    block_function %= function_ + id_ + opar + expr_list + cpar + block_expr 
+    block_function %=  function_ + id_ + opar + cpar + block_expr
     block_expr %= okey + block_list + ckey
     block_list %= expr + semi
     block_list %= expr + semi + block_list
@@ -434,30 +434,30 @@ def hulk_grammar():
     
     id_ext %= double_point + id_
 
-    method %= id_ + opar + expr_list + cpar + id_ext + block_expr
-    method %= id_ + opar + expr_list + cpar + block_expr
-    method %= id_ + opar + cpar + id_ext + block_expr
-    method %= id_ + opar + cpar + block_expr
-    method %= id_ + opar + expr_list + cpar + arrow + expr + semi
-    method %= id_ + opar + cpar + arrow + expr + semi
+    # method %= id_ + opar + expr_list + cpar + id_ext + block_expr
+    # method %= id_ + opar + expr_list + cpar + block_expr
+    # method %= id_ + opar + cpar + id_ext + block_expr
+    # method %= id_ + opar + cpar + block_expr
+    # method %= id_ + opar + expr_list + cpar + arrow + expr
+    # method %= id_ + opar + cpar + arrow + expr
 
-    method_list %= method + semi + method_list 
-    method_list %= method + semi
+    # method_list %= method + semi + method_list 
+    # method_list %= method + semi
 
-    assign_type_list %= assign + semi
-    assign_type_list %= assign + semi + assign_type_list
+    # assign_type_list %= assign + semi
+    # assign_type_list %= assign + semi + assign_type_list
 
-    block_type_expr %= okey + assign_type_list + method_list + ckey
-    block_type_expr %= okey + method_list + ckey
-    block_type_expr %= okey + assign_type_list + ckey
+    # block_type_expr %= okey + assign_type_list + method_list + ckey
+    # block_type_expr %= okey + method_list + ckey
+    # block_type_expr %= okey + assign_type_list + ckey
 
-    inherits_id %= inherits + id_
-    inherits_id %= inherits + function_call
+    # inherits_id %= inherits + id_
+    # inherits_id %= inherits + function_call
 
-    type_expr %= type_ + id_ + opar + expr_list + cpar + inherits_id + block_type_expr
-    type_expr %= type_ + id_ + inherits_id + block_type_expr
-    type_expr %= type_ + id_ + opar + expr_list + cpar + block_type_expr
-    type_expr %= type_ + id_ + block_type_expr
+    # type_expr %= type_ + id_ + opar + expr_list + cpar + inherits_id + block_type_expr
+    # type_expr %= type_ + id_ + inherits_id + block_type_expr
+    # type_expr %= type_ + id_ + opar + expr_list + cpar + block_type_expr
+    # type_expr %= type_ + id_ + block_type_expr
 
     protocol_expr %= protocol + id_ + extends_expr + okey + method_protocol_list + ckey
     protocol_expr %= protocol + id_ + extends_expr + okey + ckey
@@ -481,19 +481,19 @@ def hulk_grammar():
     #Comparative operators
 
     comparative_operator %= equals
-    #comparative_operator %= not_equals
-    #comparative_operator %= greater
-    #comparative_operator %= less
-    #comparative_operator %= greater_equals
-    #comparative_operator %= less_equals
+    comparative_operator %= not_equals
+    comparative_operator %= greater
+    comparative_operator %= less
+    comparative_operator %= greater_equals
+    comparative_operator %= less_equals
 
     #Boolean expressions
     boolean_expr %= boolean_expr + comparative_operator + boolean_term
     boolean_expr %= comparable_expr + comparative_operator + comparable_expr
     boolean_expr %= boolean_expr + comparative_operator + comparable_expr
-    #boolean_expr %= boolean_expr + and_ + boolean_term
-    #boolean_expr %= boolean_expr + or_ + boolean_term
-    #boolean_expr %= not_ + boolean_term
+    boolean_expr %= boolean_expr + and_ + boolean_term
+    boolean_expr %= boolean_expr + or_ + boolean_term
+    boolean_expr %= not_ + boolean_term
     boolean_expr %= boolean_term
 
     boolean_term %= opar + boolean_expr + cpar
