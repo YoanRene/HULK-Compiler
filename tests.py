@@ -1,5 +1,6 @@
 from Lexer import *
 from ParserLR1 import *
+from Semantic_checker import *
 
 def test_lexer():
     nonzero_digits = '|'.join(str(n) for n in range(1,10))
@@ -278,7 +279,7 @@ def test_grammar():
         assert parsed!=None
 
 
-def hulk_grammar():
+def hulk_grammar():     
     G = Grammar()
     program = G.NonTerminal('<program>',True)
     expr, statment_list, stat, inline_function, block_function = G.NonTerminals('<expr> <statment_list> <stat> <inline_function> <block_function>')
@@ -331,8 +332,6 @@ def hulk_grammar():
     extends = G.Terminal('extends')
 
     block_list, block_expr, expr_list = G.NonTerminals('<block_list> <block_expr> <expr_list>')
-
-    #########################################
 
     program %= statment_list + expr + semi
     program %= statment_list
@@ -525,10 +524,6 @@ def hulk_grammar():
     math_function %= cos + opar + num_expr + cpar
     math_function %= log + opar + num_expr + comma + num_expr + cpar
     math_function %= exp + opar + num_expr + cpar
-
-
-    nonzero_digits = '|'.join(str(n) for n in range(1,10))
-    
     
     nonzero_digits = '|'.join(str(n) for n in range(1,10))
     letters = '|'.join(chr(n) for n in range(ord('a'),ord('z')+1))
@@ -613,7 +608,164 @@ def hulk_grammar():
     print(5)
 
 
+def semantic_checker_test():
 
+    #region Gramatica
+    G = Grammar()
+    program = G.NonTerminal('<program>', startSymbol=True)
+    stat_list, stat = G.NonTerminals('<stat_list> <stat>')
+    extends_expr, id_extension, inherits_id_epsilon, args_in_par_epsilon ,args,args_epsilon,attr_list, attr,attr_f, let_var, def_func, def_func_block, print_stat, params,params_Epsilon = G.NonTerminals('<extends-expr> <id-extension> <inherits-id-epsilon> <args-in-par-epsilon> <args> <args-epsilon> <attr-list> <attr> <attr-f> <let-var> <def-func> <def-block> <print-stat> <params-list> <params-list-f>')
+    aritm_expr, comp_expr, expr, term, factor, atom, power= G.NonTerminals('<aritm-expr> <comp-expr> <expr> <term> <factor> <atom> <power>')
+    while_expr, iterable, expr_body, for_expr, method_protocol,method_protocol_list,protocol_expr, method_attr_list, method_list, method, body, func_call,type_expr, expr_list, expr_str, block, block_list, params_in_par_epsilon = G.NonTerminals('<while-expr> <iterable> <expr-body> <for-expr> <method-protocol> <method-protocol-list> <protocol-expr> <method-attr-list> <method-list> <method> <body> <func-call> <type-expr> <expr-list> <expr-str> <block-expr> <block-list> <params-in-par-epsilon>')
+
+
+    let, function_, printx, in_, for_, while_ = G.Terminals('let function print in for while')
+    sqrt, sin, cos, tan, log, exp, rand = G.Terminals('sqrt sin cos tan log exp rand')
+    semi, comma, opar, cpar, arrow, okey, ckey= G.Terminals('; , ( ) => { }')
+    and_, or_ ,not_ = G.Terminals('& | !')
+    greater, greater_equals, equals, less, less_equals, not_equals = G.Terminals('> >= == < <= !=')
+    equal, plus, minus, star, div, pow, arroba, pow_star,double_dot = G.Terminals('= + - * / ^ @ ** :') #######
+    id_, num, string_ = G.Terminals('id num str')
+    type_, protocol, inherits, extends = G.Terminals('type protocol inherits extends')
+
+    # Productions
+
+    program %= expr + semi | type_expr | protocol_expr | for_expr + semi | while_expr + semi
+
+    type_expr %= type_ + id_ + params_in_par_epsilon + inherits_id_epsilon + okey + attr_list + ckey
+
+    id_extension %= double_dot + id_ | G.Epsilon
+    
+    params %= id_ + id_extension | id_ + id_extension + comma + params 
+
+    params_Epsilon %= params | G.Epsilon
+
+    params_in_par_epsilon %= opar + params_Epsilon + cpar | G.Epsilon
+
+    args %= expr | expr + comma + args 
+
+    args_epsilon %= args | G.Epsilon
+
+    args_in_par_epsilon %= opar + args_epsilon + cpar | G.Epsilon
+
+    inherits_id_epsilon %= inherits + id_ + args_in_par_epsilon | G.Epsilon
+
+    attr %= id_ + id_extension + equal + expr 
+
+    attr_list %= attr + semi + attr_list | G.Epsilon 
+
+    expr_list %= expr + semi | expr + semi + expr_list 
+
+    method %= id_ + opar + params_Epsilon + cpar + id_extension + body  
+
+    method_list %= method + method_list | G.Epsilon
+
+    body %= arrow + expr + semi | okey + expr_list + ckey
+
+    protocol_expr %= protocol + id_ + extends_expr + okey + method_protocol_list + ckey
+
+    method_protocol %= id_ + opar + params_Epsilon + cpar + id_extension + semi
+
+    method_protocol_list %= method_protocol + method_protocol_list | G.Epsilon
+
+    extends_expr %= extends + id_ | G.Epsilon
+
+    for_expr %= for_ + opar + id_ + in_ + iterable + cpar + expr_body
+
+    while_expr %= while_ + opar + iterable + cpar + expr_body 
+
+    iterable %= id_ + args_in_par_epsilon
+
+    expr_body %= okey + expr_list + ckey
+    expr_body %= expr
+
+    expr %= num
+    expr %= id_
+
+    #endregion
+    #region Lexer
+    nonzero_digits = '|'.join(str(n) for n in range(1,10))
+    letters = '|'.join(chr(n) for n in range(ord('a'),ord('z')+1))
+    letters = letters +'|'+'|'.join(chr(n) for n in range(ord('A'),ord('Z')+1))  
+    symbols="!|@|%|^|&|\\*|_|+|-|/|:|;|<|>|=|,|.|?|~|`|\\(|\\)|[|]|{|}|#|'|\\||¿|¡|º|ª|¬"
+    vari = f'\\"({letters}|{nonzero_digits}|{symbols}| |\\")*\\"'
+    lexer = Lexer([
+        ('space', '  *'),
+        (string_, vari),
+        (semi,';'),
+        (comma,','),
+        (plus,plus.Name),
+        (and_,and_.Name),
+        (or_,'\\'+or_.Name),
+        (not_,not_.Name),
+        (equals,equals.Name),
+        (not_equals,not_equals.Name),
+        (greater,greater.Name),
+        (greater_equals,greater_equals.Name),
+        (less,less.Name),
+        (less_equals,less_equals.Name),
+        (minus,minus.Name),
+        (opar,'\\'+opar.Name),
+        (cpar,'\\'+cpar.Name),
+        (equal,equal.Name),
+        (star,'\\'+star.Name),
+        (div,div.Name),
+        (pow,pow.Name),
+        (pow_star,'\\'+pow_star.Name+'\\'+pow_star.Name),
+        (function_,function_.Name),
+        (arrow,arrow.Name),
+        (function_,function_.Name),
+        (printx,printx.Name),
+        (let,let.Name),
+        (for_,for_.Name),
+        (while_,while_.Name),
+        (in_,in_.Name),
+        (sqrt,sqrt.Name),
+        (sin,sin.Name),
+        (cos,cos.Name),
+        (log,log.Name),
+        (exp,exp.Name),
+        (double_dot,double_dot.Name),
+        (arroba,arroba.Name),
+        (rand,rand.Name),
+        (okey,okey.Name),
+        (ckey,ckey.Name),
+        (type_,type_.Name),
+        (protocol,protocol.Name),
+        (extends,extends.Name),
+        (inherits,inherits.Name),
+        (num, f'({nonzero_digits})(0|{nonzero_digits})*|0'),
+        (id_, f'({letters})({letters}|0|{nonzero_digits})*')
+    ],G.EOF)
+    #endregion
+
+    texts=['5+4;']
+
+    #region Parser
+    parser = LR1Parser(G)
+    for i in texts:
+        tokens = lexer(i)
+        tokens_type = []
+        for j in tokens:
+            if j.token_type!='space':
+                tokens_type.append(j.token_type)
+        parse,operations = parser(tokens_type, get_shift_reduce=True)
+    #endregion
+    
+    #region Semantic Checker
+    ast = evaluate_reverse_parse(parse, operations, tokens)
+
+    formatter = FormatVisitor()
+    print(formatter.visit(ast))
+
+    scope = Scope()
+
+    semantic_checker = SemanticCheckerVisitor()
+    errors = semantic_checker.visit(ast)
+    for i, error in enumerate(errors,1):
+        print(f'{i}.', error)
+
+    #endregion
 
 
 
@@ -622,9 +774,10 @@ def hulk_grammar():
     
 
 #test_lexer()
-hulk_grammar()
+#hulk_grammar()
 #test_parser()
 #test_parser_lexer()
 #test_hulk()
 #loop_grammar()
 #test_grammar()
+semantic_checker_test()

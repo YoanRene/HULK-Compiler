@@ -3,10 +3,9 @@ from Grammar import *
 from Parser import *
 from ParserLR1 import *
 from Regex import *
+import Visitor as visitor
+import itertools as itl
 
-#Metodos auxiliares
-
-#del evaluation
 def evaluate_reverse_parse(right_parse, operations, tokens):
     if not right_parse or not operations or not tokens:
         return
@@ -43,8 +42,9 @@ class Node:
     pass
 
 class ProgramNode(Node):
-    def __init__(self, statements):
+    def __init__(self, statements,expr):
         self.statements = statements
+        self.expr = expr
         
 class StatementNode(Node):
     pass
@@ -58,10 +58,10 @@ class VarDeclarationNode(StatementNode): #let
         self.expr = expr
 
 class FuncDeclarationNode(StatementNode):
-    def __init__(self, idx, params, body):
+    def __init__(self, idx, expr_list, expr):
         self.id = idx
-        self.params = params
-        self.body = body
+        self.expr_list = expr_list
+        self.expr = expr
 
 class PrintNode(StatementNode):
     def __init__(self, expr):
@@ -106,28 +106,18 @@ class DivNode(BinaryNode):
     def evaluate(self):
         return self.left.evaluate() / self.right.evaluate()
 
+class WhileNode(ExpressionNode):
+    def __init__(self,boolean_expr,body):
+        self.boolean_expr = boolean_expr
+        self.body = body
+        
 
-########ME imagino que haya que poner mas clases de nodes
 
-class Conditional_expr(ExpressionNode):
-    def __init__(self,if_expr,boolean_expr,expr,else_expr):
-        pass
-
-class Boolean_expr(ExpressionNode):
-    def __init__(self,boolean_expr,comp_op,boolean_term):
-        pass
-
-class Boolean_term(ExpressionNode):
-    def __init__(self,boolean_expr):
-        pass
-
-class Comparable_expression(ExpressionNode):
-    def __init__(self,numerical_expr,string_expr):
-        pass
-
-class Numerical_expr(ExpressionNode):
-    def __init__(self,numerical_expr,term):
-        pass
+class ForNode(ExpressionNode):
+    def __init__(self,boolean_expr,iterable,body):
+        self.boolean_expr = boolean_expr
+        self.iterable = iterable
+        self.body = body
 
 class IfNode(ExpressionNode):
     def __init__(self,boolean_expr,expr,block_expr):
@@ -137,8 +127,45 @@ class ElseNode(ExpressionNode):
     def __init__(self,expr,block_expr):
         pass
 
-class ElifNode(ExpressionNode):    ############
-    def __init__(self,condition,body):
+class Conditional_expr(ExpressionNode):
+    def __init__(self,if_expr,boolean_expr,expr,else_expr):
+        pass
+
+class Boolean_expr(ExpressionNode):
+    def __init__(self,boolean_expr,comp_op,boolean_term):
+        pass
+
+class ModNode(BinaryNode):
+    def evaluate(self):
+        return self.left.evaluate() % self.right.evaluate()
+    
+class PowNode(BinaryNode):
+    def evaluate(self):
+        return self.left.evaluate() ** self.right.evaluate()
+    
+class ProtocolNode(ExpressionNode):
+    def __init__(self, id, expr_list):
+        self.id = id
+        self.expr_list = expr_list
+
+class MethodNode(ExpressionNode):
+    def __init__(self, id, expr_list,id_ext):
+        self.id = id
+        self.expr_list = expr_list
+        self.id_ext = id_ext
+
+class DestructNode(ExpressionNode):
+    def __init__(self, id, expr_list):
+        self.id = id
+        self.expr_list = expr_list
+
+class AssignNode(ExpressionNode):
+    def __init__(self, id, expr):
+        self.id = id
+        self.expr = expr
+
+class Comparable_expression(ExpressionNode):
+    def __init__(self,numerical_expr,string_expr):
         pass
 
 class WhileNode(ExpressionNode):
@@ -156,22 +183,6 @@ class BlockNode(ExpressionNode):
 class TypePropCallNode(AtomicNode):
     def __init__(self, id,params):
         pass
-
-class NumNode(AtomicNode):
-    pass
-
-class StringNode(AtomicNode):
-    pass
-
-class BoolNode(AtomicNode):
-    pass
-
-class VarNode(AtomicNode):
-    pass
-
-class RanNode(AtomicNode):
-    pass
-
 
 class UnaryNode(ExpressionNode):
     def __init__(self,expr):
@@ -198,165 +209,22 @@ class ExpNode(UnaryNumOpNode):
 class NotNode(UnaryLogOpNode):
     pass
 
-class BinaryNumOpNode(BinaryNode):
+class PowNode(BinaryNode):
     pass
 
-class BinaryLogOpNode(BinaryNode):
+class LogNode(BinaryNode):
     pass
 
-class BinaryStrOpNode(BinaryNode):
+class AndNode(BinaryNode):
     pass
 
-##Poner el class plus y los que tengo alla arriba
-
-class PowNode(BinaryNumOpNode):
+class OrNode(BinaryNode):
     pass
 
-class LogNode(BinaryNumOpNode):
-    pass
-
-class EqualNode(BinaryLogOpNode):
-    pass
-
-class DifferenceNode(BinaryLogOpNode):
-    pass
-
-class LessThanNode(BinaryLogOpNode):
-    pass
-
-class GreaterThanNode(BinaryLogOpNode):
-    pass
-
-class GreaterEqualThanNode(BinaryLogOpNode):
-    pass
-
-class AndNode(BinaryLogOpNode):
-    pass
-
-class OrNode(BinaryLogOpNode):
-    pass
-
-class ConcatNode(BinaryStrOpNode):
+class ConcatNode(BinaryNode): ##
     pass 
 
-################
-
-
 #endregion
-
-#region ejemplo de gramatica
-G = Grammar()
-
-#region asignacionde terminales y eso
-program = G.NonTerminal('<program>', startSymbol=True)
-stat_list, stat = G.NonTerminals('<stat_list> <stat>')
-let_var, def_func, print_stat, arg_list = G.NonTerminals('<let-var> <def-func> <print-stat> <arg-list>')
-expr, term, factor, atom = G.NonTerminals('<expr> <term> <factor> <atom>')
-func_call, expr_list = G.NonTerminals('<func-call> <expr-list>')
-
-let, defx, printx = G.Terminals('let def print')
-semi, comma, opar, cpar, arrow = G.Terminals('; , ( ) ->')
-equal, plus, minus, star, div = G.Terminals('= + - * /')
-idx, num = G.Terminals('id int')
-#endregion
-
-
-program %= stat_list, lambda h,s: ProgramNode(s[1])
-
-stat_list %= stat + semi, lambda h,s: [s[1]] # Your code here!!! (add rule)
-stat_list %= stat + semi + stat_list, lambda h,s: [s[1]] + s[3] # Your code here!!! (add rule)
-
-stat %= let_var, lambda h,s: s[1] # Your code here!!! (add rule)
-stat %= def_func, lambda h,s: s[1] # Your code here!!! (add rule)
-stat %= print_stat, lambda h,s: s[1] # Your code here!!! (add rule)
-
-let_var %= let + idx + equal + expr, lambda h,s: VarDeclarationNode(s[2], s[4]) # Your code here!!! (add rule)
-
-def_func %= defx + idx + opar + arg_list + cpar + arrow + expr, lambda h,s: FuncDeclarationNode(s[2], s[4], s[7]) # Your code here!!! (add rule)
-
-print_stat %= printx + expr, lambda h,s: PrintNode(s[2]) # Your code here!!! (add rule)
-
-arg_list %= idx, lambda h,s: [s[1]] # Your code here!!! (add rule)
-arg_list %= idx + comma + arg_list, lambda h,s: [s[1]] + s[3] # Your code here!!! (add rule)
-
-expr %= expr + plus + term, lambda h,s: PlusNode(s[1],s[3]) # Your code here!!! (add rule)
-expr %= expr + minus + term, lambda h,s: MinusNode(s[1],s[3]) # Your code here!!! (add rule)
-expr %= term, lambda h,s: s[1] # Your code here!!! (add rule)
-
-term %= term + star + factor, lambda h,s: StarNode(s[1],s[3]) # Your code here!!! (add rule)
-term %= term + div + factor, lambda h,s: DivNode(s[1],s[3]) # Your code here!!! (add rule)
-term %= factor, lambda h,s: s[1] # Your code here!!! (add rule)
-
-factor %= atom, lambda h,s: s[1] # Your code here!!! (add rule)
-factor %= opar + expr + cpar, lambda h,s: s[2] # Your code here!!! (add rule)
-
-atom %= num, lambda h,s: ConstantNumNode(s[1]) # Your code here!!! (add rule)
-atom %= idx, lambda h,s: VariableNode(s[1]) # Your code here!!! (add rule)
-atom %= func_call, lambda h,s: s[1] # Your code here!!! (add rule)
-
-func_call %= idx + opar + expr_list + cpar, lambda h,s: CallNode(s[1], s[3]) # Your code here!!! (add rule)
-
-expr_list %= expr, lambda h,s: [s[1]] # Your code here!!! (add rule)
-expr_list %= expr + comma + expr_list, lambda h,s: [s[1]] + s[3] # Your code here!!! (add rule)
-
-tokens = [
-    Token('print', printx),
-    Token('1', num),
-    Token('-', minus),
-    Token('1', num),
-    Token('-', minus),
-    Token('1', num),
-    Token(';', semi),
-    Token('let', let),
-    Token('x', idx),
-    Token('=', equal),
-    Token('58', num),
-    Token(';', semi),
-    Token('def', defx),
-    Token('f', idx),
-    Token('(', opar),
-    Token('a', idx),
-    Token(',', comma),
-    Token('b', idx),
-    Token(')', cpar),
-    Token('->', arrow),
-    Token('5', num),
-    Token('+', plus),
-    Token('6', num),
-    Token(';', semi),
-    Token('print', printx),
-    Token('F', idx),
-    Token('(', opar),
-    Token('5', num),
-    Token('+', plus),
-    Token('x', idx),
-    Token(',', comma),
-    Token('7', num),
-    Token('+', plus),
-    Token('y', idx),
-    Token(')', cpar),
-    Token(';', semi),
-    Token('$', G.EOF),
-]
-#endregion
-
-
-
-
-#########################################################INICIO########################################################
-#inicializando con las cosas del parser
-
-parser = LR1Parser(G)
-parse,operations = parser([t.token_type for t in tokens], get_shift_reduce=True)
-
-
-#obtener la raiz del ast
-
-ast = evaluate_reverse_parse(parse, operations, tokens)
-
-#metodo visitor para recorrer el ast y poder imprimirlo
-
-import Visitor as visitor
 
 class FormatVisitor(object):
     @visitor.on('node')
@@ -406,13 +274,6 @@ class FormatVisitor(object):
         return f'{ans}\n{args}'
     
 
-
-#imprimiendo el ast
-formatter = FormatVisitor()
-print(formatter.visit(ast))
-
-#clases pal checkeo
-
 class VariableInfo:
     def __init__(self, name):
         self.name = name
@@ -421,10 +282,6 @@ class FunctionInfo:
     def __init__(self, name, params):
         self.name = name
         self.params = params
-
-# para ocultar las variables
-
-import itertools as itl
 
 class Scope:
     def __init__(self, parent=None):
@@ -481,11 +338,6 @@ class Scope:
             if fname == func_info.name and n == len(func_info.params):
                 return func_info
         return None       
-    
-    
-scope = Scope()
-
-#Checkeo total
 
 class SemanticCheckerVisitor(object):
     def __init__(self):
@@ -551,10 +403,3 @@ class SemanticCheckerVisitor(object):
         # Your code here!!!
         self.visit(node.left,scope)
         self.visit(node.right,scope)
-
-#printeando los errores
-
-semantic_checker = SemanticCheckerVisitor()
-errors = semantic_checker.visit(ast)
-for i, error in enumerate(errors,1):
-    print(f'{i}.', error)
