@@ -1,7 +1,6 @@
 import pydot
 
 
-# CP6
 def move(automaton, states, symbol):
     moves = set()
     for state in states:
@@ -72,7 +71,6 @@ def nfa_to_dfa(automaton):
     dfa = DFA(len(states), finals, transitions)
     return dfa
 
-# CP7
 
 def distinguish_states(group, automaton, sets):
     equivalence_classes = {}
@@ -300,7 +298,6 @@ class DFA(NFA):
         self._reset()
         return False
     
-# Lo del profe
 
 class Token:
     """

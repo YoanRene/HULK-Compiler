@@ -27,20 +27,20 @@ class ShiftReduceParser:
             lookahead = w[cursor]
             if self.verbose: print(stack, '<---||--->', w[cursor:])
                 
-            # Your code here!!! (Detect error)
+            #(Detect error)
             try:
                 self.action[state, lookahead.Name]
             except:
                 return None
 
             action, tag = self.action[state, lookahead.Name]
-            # Your code here!!! (Shift case)
+            #(Shift case)
             if action == self.SHIFT:
                 operations.append(self.SHIFT)
                 cursor -= -1
                 stack.append(tag)
                 continue
-            # Your code here!!! (Reduce case)
+            #(Reduce case)
             if action == self.REDUCE:
                 operations.append(self.REDUCE)
                 if not tag.Right.IsEpsilon:
@@ -51,56 +51,12 @@ class ShiftReduceParser:
                 stack.append(self.goto[new_state, tag.Left.Name])
                 output.append(tag)
                 continue
-            # Your code here!!! (OK case)
+            #(OK case)
             if action == self.OK:
                 #output.append(tag)
                 return output if not get_shift_reduce else(output,operations)
-            # Your code here!!! (Invalid case)
-            return None
-        
-
-
-#region lo del profe
-        ###########el call del profe#############
-#          def __call__(self,w,get_shift_reduce=False):
-#   stack=[0]
-#   cursor=0
-#   output=[]
-#   operations=[]
-#   while True:
-#    state=stack[-1]
-#    lookahead=w[cursor]
-#    if self.verbose:print(stack,'<---||--->',w[cursor:])
-#    if(state,lookahead)not in self.action:
-#     print((state,lookahead))
-#     print("Error. Aborting...")
-#     return None
-#    action,tag=self.action[state,lookahead]
-#    if action==self.SHIFT:
-#     operations.append(self.SHIFT)
-#     stack+=[lookahead,tag]
-#     cursor+=1
-#    elif action==self.REDUCE:
-#     operations.append(self.REDUCE)
-#     output.append(tag)
-#     head,body=tag
-#     for symbol in reversed(body):
-#      stack.pop()
-#      assert stack.pop()==symbol
-#     state=stack[-1]
-#     goto=self.goto[state,head]
-#     stack+=[head,goto]
-#    elif action==self.OK:
-#     stack.pop()
-#     assert stack.pop()==self.G.startSymbol
-#     assert len(stack)==1
-#     return output if not get_shift_reduce else(output,operations)
-#    else:
-#     raise Exception('Invalid action!!!')
-
-        ##########################################
-
-#endregion
+            #(Invalid case)
+            return None        
 
 
 def compress(items):
@@ -122,7 +78,7 @@ def expand(G, item, firsts):
         return []
     
     lookaheads = ContainerSet()
-    # Your code here!!! (Compute lookahead for child items)
+    #(Compute lookahead for child items)
     new_items = []
     previews = item.Preview()
     for preview in previews:
@@ -137,7 +93,7 @@ def expand(G, item, firsts):
         lookaheads.update(prev_first)
     
     assert not lookaheads.contains_epsilon
-    # Your code here!!! (Build and return child items)
+    #(Build and return child items)
     for prod in next_symbol.productions:
             new_item = Item(prod, 0, lookaheads = lookaheads)
             new_items.append(new_item)
@@ -152,7 +108,6 @@ def closure_lr1(G, items, firsts):
         changed = False
         
         new_items = ContainerSet()
-        # Your code here!!!
         for item in closure:
             new_items.update(ContainerSet(*expand(G , item, firsts)))
 
@@ -186,7 +141,7 @@ def build_LR1_automaton(G):
         current = pending.pop()
         current_state = visited[current]
         for symbol in G.terminals + G.nonTerminals:
-            # Your code here!!! (Get/Build `next_state`)
+            #(Get/Build `next_state`)
             closure_current = closure_lr1(G ,current, firsts)
             goto = goto_lr1(G, closure_current, symbol, just_kernel=True)
             if len(goto) == 0:
@@ -218,7 +173,6 @@ class LR1Parser(ShiftReduceParser):
         for node in automaton:
             idx = node.idx
             for item in node.state:
-                # Your code here!!!
                 if item.IsReduceItem:
                     if item.production == prodOk and posOk == item.pos and G.EOF in item.lookaheads:
                         self._register(self.action, (idx, G.EOF.Name),(self.OK, 1))
@@ -232,8 +186,6 @@ class LR1Parser(ShiftReduceParser):
                         self._register(self.action, (idx, item.NextSymbol.Name), (self.SHIFT, node.transitions[item.NextSymbol.Name][0].idx))
                     else:
                         self._register(self.goto, (idx, item.NextSymbol.Name), (node.transitions[item.NextSymbol.Name][0].idx))
-                # - Fill `self.Action` and `self.Goto` according to `item`)
-                # - Feel free to use `self._register(...)`)
         return automaton
         
     @staticmethod

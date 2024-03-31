@@ -59,8 +59,8 @@ def HulkGrammar():
 
     program %= statment_list + expr + semi
     program %= statment_list
-    program %= comparable_expr + semi ######Estoy obligando al punto y coma
-    program %= boolean_expr + semi ######Estoy obligando al punto y coma
+    program %= comparable_expr + semi 
+    program %= boolean_expr + semi 
     program %= let_expr + semi
     program %= for_expr + semi
 

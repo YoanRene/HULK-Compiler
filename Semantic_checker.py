@@ -298,25 +298,21 @@ class Scope:
         return child_scope
 
     def define_variable(self, vname):
-        # Your code here!!!
         if self.is_local_var(vname):
             return False
         self.local_vars.append(VariableInfo(vname))
         return True
     
     def define_function(self, fname, params):
-        # Your code here!!!
         if self.is_local_func(fname,len(params)):
             return False
         self.local_vars.append(FunctionInfo(fname,params))
         return True
 
-    def is_var_defined(self, vname):   # ARREGLAR: BUSCAR EN PARENT SOLO HASTA VAR_INDEX_AT_PARENT
-        # Your code here!!!
+    def is_var_defined(self, vname):  
         return self.is_local_var(vname) or (self.parent.is_var_defined(vname) if self.parent is not None else False)    
     
-    def is_func_defined(self, fname, n):     # ARREGLAR: BUSCAR EN PARENT SOLO HASTA FUNC_INDEX_AT_PARENT
-        # Your code here!!!
+    def is_func_defined(self, fname, n):    
         return self.is_local_func(fname,n) or (self.parent.is_func_defined(fname,n) if self.parent is not None else False)
 
     def is_local_var(self, vname):
@@ -326,14 +322,12 @@ class Scope:
         return self.get_local_function_info(fname, n) is not None
 
     def get_local_variable_info(self, vname):
-        # Your code here!!!
         for var_info in self.local_vars:
             if vname == var_info.name:
                 return var_info
         return None
     
     def get_local_function_info(self, fname, n):
-        # Your code here!!!
         for func_info in self.local_funcs:
             if fname == func_info.name and n == len(func_info.params):
                 return func_info
@@ -349,7 +343,6 @@ class SemanticCheckerVisitor(object):
     
     @visitor.when(ProgramNode)
     def visit(self, node, scope=None):
-        # Your code here!!!
         if scope is None:
             scope = Scope()
         for statement_node in node.statements:
@@ -358,14 +351,12 @@ class SemanticCheckerVisitor(object):
     
     @visitor.when(VarDeclarationNode)
     def visit(self, node, scope):
-        # Your code here!!!                                      
         self.visit(node.expr, scope) 
         if not scope.define_variable(node.id):
             self.errors.append(f'Variable {node.id} is already defined in current scope.')       
     
     @visitor.when(FuncDeclarationNode)
     def visit(self, node, scope):
-        # Your code here!!!        
         inner_scope = scope.create_child_scope()
         for param in node.params:
             if not inner_scope.define_variable(param):
@@ -376,23 +367,19 @@ class SemanticCheckerVisitor(object):
     
     @visitor.when(PrintNode)
     def visit(self, node, scope):
-        # Your code here!!!
         self.visit(node.expr, scope)
     
     @visitor.when(ConstantNumNode)
     def visit(self, node, scope):
-        # Your code here!!!
         pass
     
     @visitor.when(VariableNode)
     def visit(self, node, scope):
-        # Your code here!!!
         if not scope.is_var_defined(node.lex):
             self.errors.append(f'Variable {node.lex} is not defined.')
     
     @visitor.when(CallNode)
     def visit(self, node, scope):
-        # Your code here!!!
         for argument_node in node.args:
             self.visit(argument_node,scope)
         if not scope.is_func_defined(node.lex,len(node.args)):
@@ -400,6 +387,5 @@ class SemanticCheckerVisitor(object):
     
     @visitor.when(BinaryNode)
     def visit(self, node, scope):
-        # Your code here!!!
         self.visit(node.left,scope)
         self.visit(node.right,scope)

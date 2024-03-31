@@ -13,7 +13,7 @@ def init():
     G,lexer= HulkGrammar()
     parser = LR1Parser(G)
 
-    texts=[''] #Text to be parsed
+    texts=['']
 
     for i in texts:
         tokens = lexer(i)

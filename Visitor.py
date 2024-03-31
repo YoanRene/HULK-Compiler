@@ -51,7 +51,6 @@ class Dispatcher(object):
 
   @staticmethod
   def __argspec(fn):
-    # Support for Python 3 type hints requires inspect.getfullargspec
     if hasattr(inspect, 'getfullargspec'):
       return inspect.getfullargspec(fn)
     else:
