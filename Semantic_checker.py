@@ -49,8 +49,7 @@ class ProgramNode:
         pass
 
 class FunctionStatNode:
-    def __init__(self, function_, id_, params, id_extend, body):
-        self.function_ = function_
+    def __init__(self,id_, params, id_extend, body):
         self.id_ = id_
         self.params = params
         self.id_extend = id_extend
@@ -61,8 +60,7 @@ class FunctionStatNode:
         pass
 
 class TypeStatNode:
-    def __init__(self, type_, id_, params_in_par, inherits_expr, decls_methods_semi):
-        self.type_ = type_
+    def __init__(self, id_, params_in_par, inherits_expr, decls_methods_semi):
         self.id_ = id_
         self.params_in_par = params_in_par
         self.inherits_expr = inherits_expr
@@ -73,8 +71,7 @@ class TypeStatNode:
         pass
 
 class ProtocolStatNode:
-    def __init__(self, protocol, id_, extends_expr, method_protocol_list):
-        self.protocol = protocol
+    def __init__(self, id_, extends_expr, method_protocol_list):
         self.id_ = id_
         self.extends_expr = extends_expr
         self.method_protocol_list = method_protocol_list
@@ -105,8 +102,7 @@ class MethodNode:
         pass
 
 class ExtendsExprNode:
-    def __init__(self, extends, id_):
-        self.extends = extends
+    def __init__(self, id_):
         self.id_ = id_
 
     def evaluate(self):
@@ -114,8 +110,7 @@ class ExtendsExprNode:
         pass
 
 class InheritsExprNode:
-    def __init__(self, inherits, id_, args_in_par):
-        self.inherits = inherits
+    def __init__(self, id_, args_in_par):
         self.id_ = id_
         self.args_in_par = args_in_par
 
@@ -140,9 +135,9 @@ class ParamsNode:
         pass
 
 class ParamsAuxNode:
-    def __init__(self, id_, type_):
+    def __init__(self, id_, id_extend):
         self.id_ = id_
-        self.type_ = type_
+        self.id_extend = id_extend
 
     def evaluate(self):
         # Implementación de la evaluación de los parámetros auxiliares
@@ -166,8 +161,7 @@ class ExprNode:
         pass
 
 class InstExprNode:
-    def __init__(self, new_, id_, args):
-        self.new_ = new_
+    def __init__(self, id_, args):
         self.id_ = id_
         self.args = args
 
@@ -176,8 +170,7 @@ class InstExprNode:
         pass
 
 class ArrayExprNode:
-    def __init__(self, new_, id_, expr):
-        self.new_ = new_
+    def __init__(self, id_, expr):
         self.id_ = id_
         self.expr = expr
 
@@ -429,8 +422,8 @@ class FormatVisitor(object):
     @visitor.when(ProgramNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__ProgramNode [<stat>; ... <stat>;]'
-        statements = '\n'.join(self.visit(child, tabs + 1) for child in node.statements)
-        return f'{ans}\n{statements}'
+        expr = self.visit(node.expr, tabs + 1)
+        return f'{ans}\n{expr}'
     
     @visitor.when(PrintExprNode)
     def visit(self, node, tabs=0):
@@ -438,6 +431,293 @@ class FormatVisitor(object):
         expr = self.visit(node.expr, tabs + 1)
         return f'{ans}\n{expr}'
     
+    @visitor.when(DeclsNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__DeclsNode'
+        decls = self.visit(node.decls, tabs + 1)
+        decl=self.visit(node.decl, tabs + 1)
+        return f'{ans}\n{decls}\n{decl}'
+    
+    @visitor.when(DeclNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__DeclNode <id> : <type>'
+        id= self.visit(node.id_, tabs + 1)
+        id_extend = self.visit(node.id_extend, tabs + 1)
+        expr = self.visit(node.expr, tabs + 1)
+        
+        return f'{ans}\n{id}\n{id_extend}\n{expr}'
+    
+    @visitor.when(FunctionStatNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__FunctionStatNode <id> (<params>) : <type> <block>'
+        id = self.visit(node.id_, tabs + 1)
+        params = self.visit(node.params, tabs + 1)
+        id_extend = self.visit(node.id_extend, tabs + 1)
+        body = self.visit(node.body, tabs + 1)
+
+    
+    @visitor.when(TypeStatNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__TypeStatNode <id> : <type>'
+        id = self.visit(node.id_, tabs + 1)
+        params_in_par = self.visit(node.params_in_par, tabs + 1)
+        inherits_expr = self.visit(node.inherits_expr, tabs + 1)
+        decls_method_semi = self.visit(node.decls_method_semi, tabs + 1)
+
+        return f'{ans}\n{id}\n{params_in_par}\n{inherits_expr}\n{decls_method_semi}'
+    
+    @visitor.when(ProtocolStatNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ProtocolStatNode <id> : <type>'
+        id = self.visit(node.id_, tabs + 1)
+        extends_expr = self.visit(node.extends_expr, tabs + 1)
+        method_protocol_list= self.visit(node.method_protocol_list, tabs + 1)
+
+        return f'{ans}\n{id}\n{extends_expr}\n{method_protocol_list}'
+    
+    @visitor.when(MethodProtocolNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__MethodProtocolNode <id> (<params>) : <type>'
+        id = self.visit(node.id_, tabs + 1)
+        params = self.visit(node.params, tabs + 1)
+        id_extend = self.visit(node.id_extend, tabs + 1)
+        return f'{ans}\n{id}\n{params}\n{id_extend}'
+    
+    @visitor.when(ExtendsExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ExtendsExprNode <id>'
+        id = self.visit(node.id_, tabs + 1)
+        return f'{ans}\n{id}'
+
+
+    @visitor.when(InheritsExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__InheritsExprNode <id>'
+        id = self.visit(node.id_, tabs + 1)
+        args_in_par = self.visit(node.args_in_par, tabs + 1)
+        return f'{ans}\n{id}\n{args_in_par}'
+    
+    @visitor.when(MethodNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__MethodNode <id> (<params>) : <type> <block>'
+        id = self.visit(node.id_, tabs + 1)
+        params = self.visit(node.params, tabs + 1)
+        id_extend = self.visit(node.id_extend, tabs + 1)
+        body = self.visit(node.body, tabs + 1)
+        return f'{ans}\n{id}\n{params}\n{id_extend}\n{body}'
+    
+    @visitor.when(BodyNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__BodyNode <expr>; ... <expr>;'
+        expr = '\n'.join(self.visit(child, tabs + 1) for child in node.expr)
+        return f'{ans}\n{expr}'
+    
+    @visitor.when(ParamsAuxNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ParamsAuxNode <id> : <type>'
+        id = self.visit(node.id_, tabs + 1)
+        id_extend = self.visit(node.id_extend, tabs + 1)
+        return f'{ans}\n{id}\n{id_extend}'
+    
+    @visitor.when(ParamsNode) #######################
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ParamsNode <id> : <type>'
+        params_aux = self.visit(node.params_aux, tabs + 1)
+        return f'{ans}\n{params_aux}'
+    
+    @visitor.when(ParamsInParNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ParamsInParNode <id> : <type>'
+        params= self.visit(node.params, tabs + 1)
+        return f'{ans}\n{params}'
+    
+    @visitor.when(InstExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__InstExprNode <id>'
+        id = self.visit(node.id_, tabs + 1)
+        args= self.visit(node.args, tabs + 1)
+        return f'{ans}\n{id}\n{args}'
+    
+    @visitor.when(ArrayExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ArrayExprNode <expr>'
+        id= self.visit(node.id_, tabs + 1)
+        expr = self.visit(node.expr, tabs + 1)
+        return f'{ans}\n{id}\n{expr}'
+    
+    @visitor.when(LetExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__LetExprNode <id> : <type> = <expr> in <expr>' ##############
+        decls= self.visit(node.decls, tabs + 1)
+        expr_body = self.visit(node.expr_body, tabs + 1)
+
+        return f'{ans}\n{decls}\n{expr_body}'
+    
+    @visitor.when(DestrExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__DestrExprNode <expr> = <expr>'
+        loc = self.visit(node.loc, tabs + 1)
+        expr = self.visit(node.expr, tabs + 1)
+        return f'{ans}\n{loc}\n{expr}'
+    
+    @visitor.when(WhileExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__WhileExprNode <expr> = <expr_body>'
+        expr= self.visit(node.expr, tabs + 1)
+        expr_body = self.visit(node.expr_body, tabs + 1)
+
+        return f'{ans}\n{expr}\n{expr_body}'
+    
+    @visitor.when(ForExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ForExprNode <id> = <expr> <expr_body>'
+        id = self.visit(node.id_, tabs + 1)
+        expr = self.visit(node.expr, tabs + 1)
+        expr_body = self.visit(node.expr_body, tabs + 1)
+        return f'{ans}\n{id}\n{expr}\n{expr_body}'
+    
+    @visitor.when(IfExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__IfExprNode <expr> <expr_body> elif <expr>'
+        expr = self.visit(node.expr, tabs + 1)
+        expr_body = self.visit(node.expr_body, tabs + 1)
+        elif_expr = self.visit(node.elif_expr, tabs + 1)
+        return f'{ans}\n{expr}\n{expr_body}\n{elif_expr}'
+    
+    @visitor.when(ElifExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ElifExprNode <expr> <expr_body> <elif_expr>'
+        expr = self.visit(node.expr, tabs + 1)
+        expr_body = self.visit(node.expr_body, tabs + 1)
+        elif_expr = self.visit(node.elif_expr, tabs + 1)
+        return f'{ans}\n{expr}\n{expr_body}\n{elif_expr}'
+    
+    @visitor.when(ElseExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ElseExprNode <expr_body>'
+        expr_body = self.visit(node.expr_body, tabs + 1)
+        return f'{ans}\n{expr_body}'
+    
+    @visitor.when(DeclNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__DeclNode <id> : <type> = <expr>'
+        id = self.visit(node.id_, tabs + 1)
+        id_extend = self.visit(node.id_extend, tabs + 1)
+        expr = self.visit(node.expr, tabs + 1)
+        return f'{ans}\n{id}\n{id_extend}\n{expr}'
+    
+    @visitor.when(ExprBodyNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ExprBodyNode <expr>'
+        expr = self.visit(node.expr, tabs + 1)
+        return f'{ans}\n{expr}'
+    
+    @visitor.when(ExprListSemiNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ExprListSemiNode <expr> <expr_list>'
+        expr_list_semi = self.visit(node.expr_list_semi, tabs + 1)
+        expr = self.visit(node.expr, tabs + 1)
+        return f'{ans}\n{expr_list_semi}\n{expr}'
+    
+    @visitor.when(IdExtendNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__IdExtendNode <id> <id_extend>'
+        id = self.visit(node.id_, tabs + 1)
+        return f'{ans}\n{id}'
+    
+    @visitor.when(ExprElemNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ExprElemNode <expr> <expr_elem>'
+        expr_elem = self.visit(node.expr_elem, tabs + 1)
+        as_expr = self.visit(node.as_expr, tabs + 1)
+        return f'{ans}\n{expr_elem}\n{as_expr}'
+    
+    @visitor.when(AsExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__AsExprNode <expr>'
+        as_expr = self.visit(node.as_expr, tabs + 1)
+        logic_concat_expr = self.visit(node.logic_concat_expr, tabs + 1)
+
+        return f'{ans}\n{as_expr}\n{logic_concat_expr}'
+    
+    @visitor.when(LogicConcatExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__LogicConcatExprNode <expr> <logic_concat_expr>'
+        logic_concat_expr = self.visit(node.logic_concat_expr, tabs + 1)
+        comp_expr = self.visit(node.comp_expr, tabs + 1)
+        return f'{ans}\n{logic_concat_expr}\n{comp_expr}'
+    
+    @visitor.when(CompExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__CompExprNode <expr> <comp_expr>'
+        comp_expr = self.visit(node.comp_expr, tabs + 1)
+        aritm_expr = self.visit(node.aritm_expr, tabs + 1)
+        return f'{ans}\n{comp_expr}\n{aritm_expr}'
+    
+    @visitor.when(AritmExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__AritmExprNode <expr> <aritm_expr>'
+        aritm_expr = self.visit(node.aritm_expr, tabs + 1)
+        term = self.visit(node.term, tabs + 1)
+        return f'{ans}\n{aritm_expr}\n{term}'
+    
+    @visitor.when(TermNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__TermNode <expr> <term>'
+        term = self.visit(node.term, tabs + 1)
+        pow_expr = self.visit(node.pow_expr, tabs + 1)
+        return f'{ans}\n{term}\n{pow_expr}'
+    
+    @visitor.when(PowExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__PowExprNode <expr> <pow_expr>'
+        pow_expr = self.visit(node.pow_expr, tabs + 1)
+        negative = self.visit(node.negative, tabs + 1)
+        return f'{ans}\n{pow_expr}\n{negative}'
+    
+    @visitor.when(NegativeNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__NegativeNode <expr>'
+        factor = self.visit(node.factor, tabs + 1)
+        return f'{ans}\n{factor}'
+    
+    @visitor.when(FactorNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__FactorNode <expr>'
+        expr = self.visit(node.expr, tabs + 1)
+        params_aux = self.visit(node.params_aux, tabs + 1)
+        expr2 = self.visit(node.expr2, tabs + 1)
+        return f'{ans}\n{expr}\n{params_aux}\n{expr2}'
+    
+    @visitor.when(LocNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__LocNode <expr>'
+        loc = self.visit(node.loc, tabs + 1)
+        id= self.visit(node.id_, tabs + 1)
+        args_in_par = self.visit(node.args_in_par, tabs + 1)
+        return f'{ans}\n{loc}\n{id}\n{args_in_par}'
+    
+    @visitor.when(ArgsAuxNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ArgsAuxNode <expr> <args_aux>'
+        args_aux = self.visit(node.args_aux, tabs + 1)
+        expr = self.visit(node.expr, tabs + 1)
+        return f'{ans}\n{args_aux}\n{expr}'
+    
+    @visitor.when(ArgsNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ArgsNode <expr>'
+        args_aux = self.visit(node.args_aux, tabs + 1)
+
+        return f'{ans}\n{args_aux}'
+    
+    @visitor.when(ArgsInParNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ArgsInParNode <expr>'
+        args = self.visit(node.args, tabs + 1)
+        return f'{ans}\n{args}'
+    
+
     # @visitor.when(VarDeclarationNode)
     # def visit(self, node, tabs=0):
     #     ans = '\t' * tabs + f'\\__VarDeclarationNode: let {node.id} = <expr>'

@@ -52,28 +52,28 @@ def HulkGrammar():
     program %= program + function_stat , lambda h,s: ProgramNode(s[1],s[2])
     program %= program + protocol_stat , lambda h,s: ProgramNode(s[1],s[2])
     program %= program + type_stat , lambda h,s: ProgramNode(s[1],s[2])
-    program %= G.Epsilon  , lambda h,s: ProgramNode([],[])
+    program %= G.Epsilon  , lambda h,s: ProgramNode(None,None)
 
-    function_stat %= function_ + id_ + opar + params + cpar + id_extend + body ,lambda h,s: FunctionStatNode(s[1],s[2],s[4],s[6],s[7])
+    function_stat %= function_ + id_ + opar + params + cpar + id_extend + body ,lambda h,s: FunctionStatNode(s[2],s[4],s[6],s[7])
 
-    type_stat %= type_ + id_ + params_in_par + inherits_expr + okey + decls_methods_semi  + ckey , lambda h,s: TypeStatNode(s[1],s[2],s[4],s[6])
+    type_stat %= type_ + id_ + params_in_par + inherits_expr + okey + decls_methods_semi  + ckey , lambda h,s: TypeStatNode(s[2],s[4],s[6])
 
-    protocol_stat %= protocol + id_ + extends_expr + okey + method_protocol_list + ckey , lambda h,s: ProtocolStatNode(s[1],s[2],s[4],s[6])
+    protocol_stat %= protocol + id_ + extends_expr + okey + method_protocol_list + ckey , lambda h,s: ProtocolStatNode(s[2],s[4],s[6])
 
     method_protocol %= id_ + opar + params + cpar + id_extend  , lambda h,s: MethodProtocolNode(s[1],s[3],s[5])
 
     method_protocol_list %= method_protocol_list + method_protocol + semi , lambda h,s: s[1] + [s[2]]
     method_protocol_list %= method_protocol + semi , lambda h,s: [s[1]]
 
-    extends_expr %= extends + id_  , lambda h,s: ExtendsExprNode(s[1], s[2])
-    extends_expr %= G.Epsilon , lambda h,s: ExtendsExprNode(None, None)
+    extends_expr %= extends + id_  , lambda h,s: ExtendsExprNode( s[2])
+    extends_expr %= G.Epsilon , lambda h,s: ExtendsExprNode(None)
 
-    inherits_expr %= inherits + id_ + args_in_par  , lambda h,s: InheritsExprNode(s[1], s[2], s[3])
-    inherits_expr %= G.Epsilon , lambda h,s: InheritsExprNode(None, None, None)
+    inherits_expr %= inherits + id_ + args_in_par  , lambda h,s: InheritsExprNode( s[2], s[3])
+    inherits_expr %= G.Epsilon , lambda h,s: InheritsExprNode( None, None)
 
     decls_methods_semi %= decls_methods_semi + decl + semi , lambda h,s: s[1] + [s[2]] ##
     decls_methods_semi %= decls_methods_semi + method , lambda h,s: s[1] + [s[2]] ##
-    decls_methods_semi %= G.Epsilon , lambda h,s: []
+    decls_methods_semi %= G.Epsilon , lambda h,s: None
 
     method %= id_ + opar + params + cpar + id_extend + body , lambda h,s: MethodNode(s[1],s[3],s[5],s[6])
 
@@ -87,7 +87,7 @@ def HulkGrammar():
     params %= G.Epsilon , lambda h,s: ParamsNode([])
 
     params_in_par %= opar + params + cpar , lambda h,s: ParamsInParNode(s[2])
-    params_in_par %= G.Epsilon , lambda h,s: ParamsInParNode([])
+    params_in_par %= G.Epsilon , lambda h,s: ParamsInParNode(None)
 
     expr %= let_expr ,lambda h,s: s[1]
     expr %= if_expr ,lambda h,s: s[1]
@@ -128,7 +128,7 @@ def HulkGrammar():
     expr_body %= expr  , lambda h,s: ExprBodyNode(s[1])
     expr_body %= okey + expr_list_semi + ckey , lambda h,s: ExprBodyNode(s[2])
 
-    expr_list_semi %= expr_list_semi + expr + semi , lambda h,s: ExprListSemiNode(s[1] + [s[2]])
+    expr_list_semi %= expr_list_semi + expr + semi , lambda h,s: ExprListSemiNode(s[1],s[2])
     expr_list_semi %= expr + semi , lambda h,s: ExprListSemiNode([s[1]])
 
     id_extend %= double_dot + id_ , lambda h,s: IdExtendNode(s[2])
