@@ -1,314 +1,295 @@
 from Grammar import *
 from Lexer import *
+from Semantic_checker import *
 
 
 def HulkGrammar():
 
-    G = Grammar()
+    G=Grammar()
+
     program = G.NonTerminal('<program>',True)
-    expr, statment_list, stat, inline_function, block_function = G.NonTerminals('<expr> <statment_list> <stat> <inline_function> <block_function>')
-    num_expr, term, factor, constant = G.NonTerminals('<num_expr> <term> <factor> <constant>')
-    boolean_expr, boolean_term = G.NonTerminals('<boolean_expr> <boolean_term>')
-    print_expr = G.NonTerminal('<print_expr>')
-    let_expr, assign_list, assign = G.NonTerminals('<let_expr> <assign_list> <assign>')
-    destruct_expr = G.NonTerminal('<destruct_expr>')
-    comparative_operator = G.NonTerminal('<comparative_operator>')
-    comparable_expr = G.NonTerminal('<comparable_expr>')
-    str_expr = G.NonTerminal('<str_expr>')
-    math_function = G.NonTerminal('<math_function>')
-    function_call, params_list, param = G.NonTerminals('<function_call> <params_list> <param>')
-    if_expr, elif_expr, elif_expr_list, else_expr, conditional_expr = G.NonTerminals('<if_expr> <elif_expr> <elif_expr_list> <else_expr> <conditional_expr>')
-    expr_list_epsilon = G.NonTerminal('<expr_list_epsilon>')
-    iterable, iterable_ext = G.NonTerminals('<iterable> <iterable_ext>')
-    while_expr, for_expr = G.NonTerminals('<while_expr> <for_expr>')
-    id_ext = G.NonTerminal('<id_ext>')
-    method, method_list = G.NonTerminals('<method> <method_list>')
-    inherits_id = G.NonTerminal('<inherits_id>')
-    type_expr = G.NonTerminal('<type_expr>')
-    block_type_elems, block_type_elems_list, block_type_expr = G.NonTerminals('<block_type_elems> <block_type_elems_list> <block_type_expr>')
-    assign_type_list = G.NonTerminal('<assign_type_list>')
-    protocol_expr = G.NonTerminal('<protocol_expr>')
-    protocol_exp_list = G.NonTerminal('<protocol_exp_list>')
-    protocol_exp_item = G.NonTerminal('<protocol_exp_item>')
-    method_protocol = G.NonTerminal('<method_protocol>')
-    method_protocol_list = G.NonTerminal('<method_protocol_list>')
-    extends_expr = G.NonTerminal('<extends_expr>')
 
-    function_ = G.Terminal('function')
-    opar, cpar, okey, ckey, id_, arrow, semi, comma = G.Terminals(' ( ) { } id => ; ,')
+    expr = G.NonTerminal('<expr>')
 
-    true_, false_ = G.Terminals('true false')
-    and_, or_, not_ = G.Terminals('& \\| !')
-    equals, not_equals, greater, less, greater_equals, less_equals = G.Terminals('== != > < >= <=')
+    body = G.NonTerminal('<body>')
+    loc = G.NonTerminal('<loc>')
+    logic_concat_expr, as_expr = G.NonTerminals('<logic-concat-expr> <as-expr>')
+    decls_methods_semi, method = G.NonTerminals('<decls-methods-semi> <method>')
+    method_protocol, method_protocol_list = G.NonTerminals('<method-protocol> <method-protocol-list>')
+    protocol_stat, extends_expr = G.NonTerminals('<protocol> <extends>')
+    type_stat, inherits_expr = G.NonTerminals('<type> <inherits>')
+    function_stat, params, params_aux, params_in_par = G.NonTerminals('<function> <params> <params-aux> <params-in-par>')
+    let_expr,if_expr,print_expr, destr_expr, while_expr, for_expr, inst_expr, array_expr  = G.NonTerminals('<let-expr> <if-expr> <print-expr> <destr-expr> <while-expr> <for-expr> <inst-expr> <array-expr>')
+    elif_expr, else_expr = G.NonTerminals('<elif-expr> <else-expr>')
+    expr_body, expr_list_semi = G.NonTerminals('<expr-body> <expr-list-semi>')
+    expr_elem, term, factor, pow_expr = G.NonTerminals('<expr-elem> <term> <factor> <pow-expr>')
+    aritm_expr, comp_expr = G.NonTerminals('<aritm-expr> <comp-expr>')
+    decl, decls = G.NonTerminals('<decl> <decls>')
+    id_extend = G.NonTerminal('<id-extend>')
+    args, args_aux, args_in_par = G.NonTerminals('<args> <args-aux> <args-in-par>')
+    expr_dot = G.NonTerminal('<expr-dot>')
+    negative = G.NonTerminal('<negative>')
 
-    plus, minus, star, div, power, mod = G.Terminals(' + - * / ^ %')
-    sqrt, sen, cos, log, exp = G.Terminals('sqrt sin cos log exp')
-    num, euler, pi = G.Terminals('num Euler Pi')
-    str_, concat, print_ = G.Terminals('str @ print')
-    equal, in_, let, dest_op = G.Terminals('= in let :=')
-    if_, else_, elif_ = G.Terminals('if else elif')
+    type_, inherits, extends, protocol, new_ = G.Terminals('type inherits extends protocol new')
+    function_, arrow = G.Terminals('function =>')
+    print_ = G.Terminal('print')
+    let, asign, in_ = G.Terminals('let = in')
+    if_, elif_, else_ = G.Terminals('if elif else')
     while_, for_ = G.Terminals('while for')
-    dot = G.Terminal('.')
-    double_point = G.Terminal(':')
-    inherits = G.Terminal('inherits')
-    type_ = G.Terminal('type')
-    protocol = G.Terminal('protocol')
-    extends = G.Terminal('extends')
+    arroba, double_arroba, destr = G.Terminals('@ @@ :=')
+    plus ,minus, pow_, pow_2, star, div, mod, opar, cpar = G.Terminals('+ - ^ ** * / % ( )')  
+    and_, or_, not_ = G.Terminals('& | !')  
+    equals, not_equals, greater, greater_equals, less, less_equals = G.Terminals('== != > >= < <=')  
+    num, id_, string = G.Terminals('num id string')
+    is_, as_ = G.Terminals('is as')
+    okey, ckey, oindex, cindex = G.Terminals('{ } [ ]')
+    semi, comma, double_dot, dot = G.Terminals('; , : .')
+    sqrt, sin, cos, exp, log, rand = G.Terminals('sqrt sin cos exp log rand')   
+    e, pi = G.Terminals('E PI')
+    that = G.Terminal('||')
 
-    block_list, block_expr, expr_list = G.NonTerminals('<block_list> <block_expr> <expr_list>')
+    program %= program + expr + semi , lambda h,s: ProgramNode(s[1],s[2])
+    program %= program + function_stat , lambda h,s: ProgramNode(s[1],s[2])
+    program %= program + protocol_stat , lambda h,s: ProgramNode(s[1],s[2])
+    program %= program + type_stat , lambda h,s: ProgramNode(s[1],s[2])
+    program %= G.Epsilon  , lambda h,s: ProgramNode([],[])
 
-    program %= statment_list + expr + semi
-    program %= statment_list
-    program %= comparable_expr + semi 
-    program %= boolean_expr + semi 
-    program %= let_expr + semi
-    program %= for_expr + semi
+    function_stat %= function_ + id_ + opar + params + cpar + id_extend + body ,lambda h,s: FunctionStatNode(s[1],s[2],s[4],s[6],s[7])
 
-    statment_list %= stat
-    statment_list %= stat + statment_list
-    stat %= inline_function
-    stat %= block_function
-    stat %= type_expr
-    stat %= protocol_expr
+    type_stat %= type_ + id_ + params_in_par + inherits_expr + okey + decls_methods_semi  + ckey , lambda h,s: TypeStatNode(s[1],s[2],s[4],s[6])
 
-    inline_function %= function_ + id_ + opar + expr_list + cpar + arrow + expr + semi
-    inline_function %= function_ + id_ + opar + cpar + arrow + expr + semi
+    protocol_stat %= protocol + id_ + extends_expr + okey + method_protocol_list + ckey , lambda h,s: ProtocolStatNode(s[1],s[2],s[4],s[6])
 
-    block_function %= function_ + id_ + opar + expr_list + cpar + block_expr 
-    block_function %=  function_ + id_ + opar + cpar + block_expr
-    block_expr %= okey + block_list + ckey
-    block_list %= expr + semi
-    block_list %= expr + semi + block_list
+    method_protocol %= id_ + opar + params + cpar + id_extend  , lambda h,s: MethodProtocolNode(s[1],s[3],s[5])
 
-    expr_list %= id_
-    expr_list %= id_ + comma + expr_list
+    method_protocol_list %= method_protocol_list + method_protocol + semi , lambda h,s: s[1] + [s[2]]
+    method_protocol_list %= method_protocol + semi , lambda h,s: [s[1]]
 
-    expr_list_epsilon %= expr_list
-    expr_list_epsilon %= G.Epsilon
+    extends_expr %= extends + id_  , lambda h,s: ExtendsExprNode(s[1], s[2])
+    extends_expr %= G.Epsilon , lambda h,s: ExtendsExprNode(None, None)
 
-    iterable %= function_call
-    iterable %= id_
+    inherits_expr %= inherits + id_ + args_in_par  , lambda h,s: InheritsExprNode(s[1], s[2], s[3])
+    inherits_expr %= G.Epsilon , lambda h,s: InheritsExprNode(None, None, None)
 
-    iterable_ext %= iterable + dot + iterable_ext
-    iterable_ext %= iterable
+    decls_methods_semi %= decls_methods_semi + decl + semi , lambda h,s: s[1] + [s[2]] ##
+    decls_methods_semi %= decls_methods_semi + method , lambda h,s: s[1] + [s[2]] ##
+    decls_methods_semi %= G.Epsilon , lambda h,s: []
 
-    for_expr %= for_ + opar + id_ + in_ + iterable + cpar + block_expr
-    for_expr %= for_ + opar + id_ + in_ + iterable + cpar + expr
+    method %= id_ + opar + params + cpar + id_extend + body , lambda h,s: MethodNode(s[1],s[3],s[5],s[6])
 
-    while_expr %= while_ + opar + boolean_expr + cpar + block_expr 
-    while_expr %= while_ + opar + boolean_expr + cpar + expr
-    while_expr %= while_ + opar + iterable_ext + cpar + block_expr
-    while_expr %= while_ + opar + iterable_ext + cpar + expr
+    body %= arrow + expr + semi , lambda h,s: BodyNode(s[2])
+    body %= okey + expr_list_semi + ckey , lambda h,s: BodyNode(s[2])
 
-    function_call %= id_ + opar + params_list + cpar
-    function_call %= id_ + opar + cpar
+    params_aux %= id_ + id_extend  , lambda h,s: ParamsAuxNode(s[1],s[2])
+    params_aux %= params_aux + comma + id_ + id_extend, lambda h,s: s[1] + [ParamsAuxNode(s[3],s[4])]
 
-    params_list %= param
-    params_list %= param + comma + params_list
+    params %= params_aux , lambda h,s: ParamsNode(s[1])
+    params %= G.Epsilon , lambda h,s: ParamsNode([])
 
-    param %= comparable_expr
-    param %= boolean_expr
+    params_in_par %= opar + params + cpar , lambda h,s: ParamsInParNode(s[2])
+    params_in_par %= G.Epsilon , lambda h,s: ParamsInParNode([])
 
-    expr %= comparable_expr
-    expr %= boolean_expr
-    expr %= print_expr
-    expr %= let_expr
-    expr %= destruct_expr
-    expr %= conditional_expr
-    expr %= while_expr
-    expr %= for_expr
+    expr %= let_expr ,lambda h,s: s[1]
+    expr %= if_expr ,lambda h,s: s[1]
+    expr %= for_expr ,lambda h,s: s[1]
+    expr %= while_expr ,lambda h,s: s[1]
+    expr %= print_expr ,lambda h,s: s[1]
+    expr %= destr_expr ,lambda h,s: s[1]
+    expr %= inst_expr ,lambda h,s: s[1]
+    expr %= array_expr ,lambda h,s: s[1]
+    expr %= expr_elem ,lambda h,s: s[1]
 
-    comparable_expr %= num_expr
-    comparable_expr %= str_expr
+    inst_expr %= new_ + id_ + opar + args + cpar  , lambda h,s: InstExprNode(s[2],s[4])
 
-    #String expressions
-    str_expr %= str_
-    #str_expr %= str_ + concat + num_expr
-    #str_expr %= str_ + concat + boolean_expr
-    #str_expr %= str_ + concat + str_
+    array_expr %= new_ + id_ + oindex + expr + cindex , lambda h,s: ArrayExprNode(s[2],s[4])
 
-    print_expr %= print_ + opar + comparable_expr + cpar
-    #print_expr %= print_ + opar + id_ + cpar
+    print_expr %= print_ + opar + expr + cpar , lambda h,s: PrintExprNode(s[1],s[3])
 
-    let_expr %= let + assign_list + in_ + expr
-    let_expr %= let + assign_list + in_ + block_expr
+    let_expr %= let + decls + in_ + expr_body , lambda h,s: LetExprNode(s[2],s[4])
 
-    destruct_expr %= id_ + dest_op + expr
-   
-    assign_list %= assign
-    assign_list %= assign + comma + assign_list
+    destr_expr %= loc + destr + expr , lambda h,s: DestrExprNode(s[1],s[3])
 
-    assign %= id_ + equal + expr
+    while_expr %=  while_ + opar + expr + cpar + expr_body , lambda h,s: WhileExprNode(s[3],s[5])
 
-    if_expr %= if_ + opar + boolean_expr + cpar + expr
-    if_expr %= if_ + opar + boolean_expr + cpar + block_expr
+    for_expr %= for_ + opar + id_ + in_ + expr + cpar + expr_body , lambda h,s: ForExprNode(s[3],s[5],s[7])
 
-    else_expr %= else_ + expr
-    else_expr %= else_ + block_expr
+    if_expr %= if_ + opar + expr + cpar + expr_body + elif_expr , lambda h,s: IfExprNode(s[3],s[5],s[6])
 
-    #elif_expr %= elif_ + opar + boolean_expr + cpar + expr
-    #elif_expr %= elif_ + opar + boolean_expr + cpar + block_expr
+    elif_expr %= elif_ + opar + expr + cpar + expr_body + elif_expr , lambda h,s: ElifExprNode(s[3],s[5],s[6])
+    elif_expr %= else_expr , lambda h,s: s[1]
 
-    #elif_expr_list %= elif_expr + elif_expr_list #####agregar el else expresion aqui
-    #elif_expr_list %= elif_expr
+    else_expr %= else_ + expr_body , lambda h,s: ElseExprNode(s[2])
 
-    conditional_expr %= if_expr + elif_ + opar + boolean_expr + cpar + expr + else_expr
-    conditional_expr %= if_expr + else_expr
-    
-    id_ext %= double_point + id_
+    decl %= id_ + id_extend + asign + expr , lambda h,s: DeclNode(s[1],s[2],s[4])
 
-    # method %= id_ + opar + expr_list + cpar + id_ext + block_expr
-    # method %= id_ + opar + expr_list + cpar + block_expr
-    # method %= id_ + opar + cpar + id_ext + block_expr
-    # method %= id_ + opar + cpar + block_expr
-    # method %= id_ + opar + expr_list + cpar + arrow + expr
-    # method %= id_ + opar + cpar + arrow + expr
+    decls %= decls + comma + decl , lambda h,s: s[1] + [s[3]]
+    decls %= decl , lambda h,s: [s[1]]
 
-    # method_list %= method + semi + method_list 
-    # method_list %= method + semi
+    expr_body %= expr  , lambda h,s: ExprBodyNode(s[1])
+    expr_body %= okey + expr_list_semi + ckey , lambda h,s: ExprBodyNode(s[2])
 
-    # assign_type_list %= assign + semi
-    # assign_type_list %= assign + semi + assign_type_list
+    expr_list_semi %= expr_list_semi + expr + semi , lambda h,s: ExprListSemiNode(s[1] + [s[2]])
+    expr_list_semi %= expr + semi , lambda h,s: ExprListSemiNode([s[1]])
 
-    # block_type_expr %= okey + assign_type_list + method_list + ckey
-    # block_type_expr %= okey + method_list + ckey
-    # block_type_expr %= okey + assign_type_list + ckey
+    id_extend %= double_dot + id_ , lambda h,s: IdExtendNode(s[2])
+    id_extend %= G.Epsilon , lambda h,s: IdExtendNode(None)
 
-    # inherits_id %= inherits + id_
-    # inherits_id %= inherits + function_call
+    expr_elem %= expr_elem + is_ + as_expr , lambda h,s: ExprElemNode(s[1],s[3])
+    expr_elem %= as_expr  , lambda h,s: ExprElemNode(s[1],None)
 
-    # type_expr %= type_ + id_ + opar + expr_list + cpar + inherits_id + block_type_expr
-    # type_expr %= type_ + id_ + inherits_id + block_type_expr
-    # type_expr %= type_ + id_ + opar + expr_list + cpar + block_type_expr
-    # type_expr %= type_ + id_ + block_type_expr
+    as_expr %= as_expr + as_ + logic_concat_expr , lambda h,s: AsExprNode(s[1],s[3])
+    as_expr %= logic_concat_expr , lambda h,s: AsExprNode(s[1],None)
 
-    protocol_expr %= protocol + id_ + extends_expr + okey + method_protocol_list + ckey
-    protocol_expr %= protocol + id_ + extends_expr + okey + ckey
-    protocol_expr %= protocol + id_ + okey + method_protocol_list + ckey
-    protocol_expr %= protocol + id_ + okey + ckey
+    logic_concat_expr %= logic_concat_expr + arroba + comp_expr , lambda h,s: LogicConcatExprNode(s[1],s[3])
+    logic_concat_expr %= logic_concat_expr + double_arroba + comp_expr , lambda h,s: LogicConcatExprNode(s[1],s[3])
+    logic_concat_expr %= logic_concat_expr + and_ + comp_expr , lambda h,s: LogicConcatExprNode(s[1],s[3])
+    logic_concat_expr %= logic_concat_expr + or_ + comp_expr , lambda h,s: LogicConcatExprNode(s[1],s[3])
+    logic_concat_expr %= not_ + comp_expr , lambda h,s: LogicConcatExprNode(s[2],None)
+    logic_concat_expr %= comp_expr , lambda h,s: LogicConcatExprNode(s[1],None)
 
-    protocol_exp_list %= protocol_exp_item + comma + protocol_exp_list
-    protocol_exp_list %= protocol_exp_item
+    comp_expr %= comp_expr + equals + aritm_expr , lambda h,s: CompExprNode(s[1],s[3])
+    comp_expr %= comp_expr + not_equals + aritm_expr , lambda h,s: CompExprNode(s[1],s[3])
+    comp_expr %= comp_expr + greater + aritm_expr , lambda h,s: CompExprNode(s[1],s[3])
+    comp_expr %= comp_expr + greater_equals + aritm_expr , lambda h,s: CompExprNode(s[1],s[3])
+    comp_expr %= comp_expr + less + aritm_expr , lambda h,s: CompExprNode(s[1],s[3])
+    comp_expr %= comp_expr + less_equals + aritm_expr , lambda h,s: CompExprNode(s[1],s[3])
+    comp_expr %= aritm_expr , lambda h,s: CompExprNode(s[1],None)
 
-    protocol_exp_item %= id_ + id_ext
+    aritm_expr %= aritm_expr + plus + term , lambda h,s: AritmExprNode(s[1],s[3]) ##seria sum node
+    aritm_expr %= aritm_expr + minus + term , lambda h,s: AritmExprNode(s[1],s[3]) ##
+    aritm_expr %= term , lambda h,s: AritmExprNode(s[1],None) ##
 
-    method_protocol %= id_ + opar + protocol_exp_list + cpar + id_ext + semi
-    method_protocol %= id_ + opar + cpar + id_ext + semi
+    term %= term + star + pow_expr , lambda h,s: TermNode(s[1],s[3]) ##
+    term %= term + div + pow_expr , lambda h,s: TermNode(s[1],s[3]) ##
+    term %= term + mod + pow_expr , lambda h,s: TermNode(s[1],s[3]) ##
+    term %= pow_expr , lambda h,s: TermNode(s[1],None) ##
 
-    method_protocol_list %= method_protocol + method_protocol_list
-    method_protocol_list %= method_protocol
+    pow_expr %= pow_expr + pow_ + negative , lambda h,s: PowExprNode(s[1],s[3]) ##
+    pow_expr %= pow_expr + pow_2 + negative , lambda h,s: PowExprNode(s[1],s[3]) ##
+    pow_expr %= negative , lambda h,s: PowExprNode(s[1],None) ##
 
-    extends_expr %= extends + id_
+    negative %= minus + factor , lambda h,s: NegativeNode(s[2])
+    negative %= factor , lambda h,s: NegativeNode(s[1])
 
+    factor %= opar + expr + cpar , lambda h,s: FactorNode(s[2],None,None)###########Ya factores lo de ponerlo en 1 mas
+    factor %= num , lambda h,s: FactorNode(s[1],None,None)
+    factor %= string , lambda h,s: FactorNode(s[1],None,None)
+    factor %= sqrt + opar + expr + cpar , lambda h,s: FactorNode(s[3],None,None)
+    factor %= sin + opar + expr + cpar , lambda h,s: FactorNode(s[3],None,None)
+    factor %= cos + opar + expr + cpar , lambda h,s: FactorNode(s[3],None,None)
+    factor %= exp + opar + expr + cpar , lambda h,s: FactorNode(s[3],None,None)
+    factor %= log + opar + expr + comma + expr + cpar , lambda h,s: FactorNode(s[3],s[5],None)
+    factor %= rand + opar + cpar , lambda h,s: FactorNode(None,None,None)
+    factor %= e , lambda h,s: FactorNode(None,None,None)
+    factor %= pi , lambda h,s: FactorNode(None,None,None)
+    factor %= loc , lambda h,s: FactorNode(s[1],None,None)
+    factor %= oindex + args + cindex  , lambda h,s: FactorNode(s[2],None,None)
+    factor %= oindex + expr + that + params_aux + in_ + expr + cindex , lambda h,s: FactorNode(s[2],s[4],s[6]) 
 
-    #Comparative operators
+    loc %= loc + dot + id_ + args_in_par , lambda h,s: LocNode(s[1],s[3],s[4])
+    loc %= loc + oindex + expr + cindex , lambda h,s: LocNode(s[1],s[3],None)
+    loc %= id_ + args_in_par , lambda h,s: LocNode(s[1],s[2],None)
 
-    comparative_operator %= equals
-    comparative_operator %= not_equals
-    comparative_operator %= greater
-    comparative_operator %= less
-    comparative_operator %= greater_equals
-    comparative_operator %= less_equals
+    args_aux %= expr  , lambda h,s: ArgsAuxNode(s[1],None)
+    args_aux %= args_aux + comma + expr , lambda h,s: ArgsAuxNode(s[1],s[3])
 
-    #Boolean expressions
-    boolean_expr %= boolean_expr + comparative_operator + boolean_term
-    boolean_expr %= comparable_expr + comparative_operator + comparable_expr
-    boolean_expr %= boolean_expr + comparative_operator + comparable_expr
-    boolean_expr %= boolean_expr + and_ + boolean_term
-    boolean_expr %= boolean_expr + or_ + boolean_term
-    boolean_expr %= not_ + boolean_term
-    boolean_expr %= boolean_term
+    args %= args_aux , lambda h,s: ArgsNode(s[1],None)
+    args %= G.Epsilon , lambda h,s: ArgsNode(None,None)
 
-    boolean_term %= opar + boolean_expr + cpar
-    boolean_term %= true_
-    boolean_term %= false_
-
-    # Numerical expressions
-    num_expr %= num_expr + plus + term
-    num_expr %= num_expr + minus + term 
-    num_expr %= term
-
-    term %= term + star + factor
-    term %= term + div + factor
-    term %= term + mod + factor
-    term %= factor
-
-    factor %= factor + power + constant
-    factor %= constant
-
-    constant %= opar + num_expr + cpar 
-    constant %= num
-    constant %= euler
-    constant %= pi
-    constant %= math_function
-    constant %= iterable_ext
-
-    math_function %= sqrt + opar + num_expr + cpar
-    math_function %= sen + opar + num_expr + cpar
-    math_function %= cos + opar + num_expr + cpar
-    math_function %= log + opar + num_expr + comma + num_expr + cpar
-    math_function %= exp + opar + num_expr + cpar
+    args_in_par %= opar + args + cpar , lambda h,s: ArgsInParNode(s[2])
+    args_in_par %= G.Epsilon , lambda h,s: ArgsInParNode(None)
 
     #Generating Lexer
     nonzero_digits = '|'.join(str(n) for n in range(1,10))
+    integers_no_zero = f'({nonzero_digits})(0|{nonzero_digits})*'
+    floats = f'{integers_no_zero}.(0|{nonzero_digits})(0|{nonzero_digits})*|0.(0|{nonzero_digits})(0|{nonzero_digits})*'
+
     letters = '|'.join(chr(n) for n in range(ord('a'),ord('z')+1))
-    letters = letters +'|'+'|'.join(chr(n) for n in range(ord('A'),ord('Z')+1))  
-    symbols="!|@|%|^|&|\\*|_|+|-|/|:|;|\\<|\\>|\\=|,|.|?|~|`|\\(|\\)|[|]|{|}|#|'|\\||¿|¡|º|ª|¬"
-    vari = f'\\"({letters}|{nonzero_digits}|{symbols}| |\\")*\\"'
+    letters = letters +'|'+'|'.join(chr(n) for n in range(ord('A'),ord('Z')+1))
+    symbols="!|@|%|^|&|\\*|_|+|-|/|:|;|<|>|=|,|.|?|~|`|\\(|\\)|[|]|{|}|#|'|\\||¿|¡|º|ª|¬"
+    string_re = f'\\"({letters}|{nonzero_digits}|{symbols}| |\\")*\\"'
+
     lexer = Lexer([
-        ('space', '  *'),
-        (semi,';'),
-        (comma,','),
-        (plus,plus.Name),
-        (minus,minus.Name),
-        (opar,'\\'+opar.Name),
-        (cpar,'\\'+cpar.Name),
-        (star,'\\'+star.Name),
-        (div,div.Name),
-        (power,power.Name),
-        (mod,mod.Name),
-        (sqrt,sqrt.Name),
-        (sen,sen.Name),
-        (cos,cos.Name),
-        (log,log.Name),
-        (exp,exp.Name),
+        ('space',' *'),
+
+        (semi,semi.Name),
+        (comma, comma.Name),
+        (double_dot,double_dot.Name),
+        (dot,dot.Name),
+
+        (type_,type_.Name),
+        (inherits,inherits.Name),
+        (extends,extends.Name),
+        (protocol,protocol.Name),
+        (new_, new_.Name),
+
+        (is_,is_.Name),
+        (as_,as_.Name),
+
         (function_,function_.Name),
         (arrow,arrow.Name),
+
+        (arroba,arroba.Name),
+        (double_arroba,double_arroba.Name),
+        (destr,destr.Name),
+
+        (print_,print_.Name),
+
+        (let,let.Name),
+        (asign,asign.Name),
+        (in_,in_.Name),
+
+        (if_, if_.Name),
+        (elif_,elif_.Name),
+        (else_,else_.Name),
+
+        (while_,while_.Name),
+        (for_,for_.Name),
+
+        (that,'\\|\\|'),
+
+        (pow_,pow_.Name),
+        (pow_2,'\\*\\*'),
+
+        (star,'\\'+star.Name),
+        (div,div.Name),
+        (mod,mod.Name),
+
+        (plus,plus.Name),
+        (minus, minus.Name),
+
+        (opar,'\\'+opar.Name),
+        (cpar,'\\'+cpar.Name),
+
         (okey,okey.Name),
         (ckey,ckey.Name),
-        (not_, not_.Name),
-        (and_, and_.Name),
-        (or_, or_.Name),
-        (true_,true_.Name),
-        (false_,false_.Name),
+        (oindex,oindex.Name),
+        (cindex,cindex.Name),
+
+        (and_,and_.Name),
+        (or_,'\\'+or_.Name),
+        (not_,not_.Name),
+
         (equals,equals.Name),
         (not_equals,not_equals.Name),
         (greater,greater.Name),
-        (less,less.Name),
         (greater_equals,greater_equals.Name),
+        (less,less.Name),
         (less_equals,less_equals.Name),
-        (num, f'({nonzero_digits})(0|{nonzero_digits})*|0'),
-        (euler, euler.Name),
-        (pi, pi.Name),
-        (str_, vari),
-        (concat, concat.Name),
-        (print_, print_.Name),
-        (let, let.Name),
-        (in_, in_.Name),
-        (equal, equal.Name),
-        (dest_op, dest_op.Name),
-        (if_, if_.Name),
-        (else_, else_.Name),
-        (elif_, elif_.Name),
-        (while_, while_.Name),
-        (for_, for_.Name),
-        (dot, dot.Name),
-        (double_point, double_point.Name),
-        (type_, type_.Name),
-        (inherits, inherits.Name),
-        (extends, extends.Name),
-        (protocol, protocol.Name),
-        (id_, f'({letters})({letters}|0|{nonzero_digits})*')
-    ],G.EOF)
+
+        (sqrt,sqrt.Name),
+        (sin,sin.Name),
+        (cos,cos.Name),
+        (exp,exp.Name),
+        (log,log.Name),
+        (rand,rand.Name),
+
+        (e,e.Name),
+        (pi,pi.Name),
+
+        (num, f'{integers_no_zero}|{floats}|0'),
+        (id_, f'({letters})({letters}|0|{nonzero_digits})*'),
+        (string, string_re)
+    ],G.EOF) 
 
     return G,lexer

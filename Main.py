@@ -7,13 +7,27 @@ from ParserLR1 import *
 from Regex import *
 from Semantic_checker import *
 from Visitor import *
+from ParserSLR1 import *
 
 def init():
 
     G,lexer= HulkGrammar()
-    parser = LR1Parser(G)
+    parser = SLR1Parser(G,True)
 
-    texts=['']
+    texts =['42;' ,'print(42);','print((((1 + 2) ^ 3) * 4) / 5);','print("Hello World");','print("The message is \"Hello World\"");',
+    'print("The meaning of life is " @ 42);','print(sin(2 * PI) ^ 2 + cos(3 * PI / log(4, 64)));',
+    'function tan(x) => sin(x) / cos(x);','function cot(x) => 1 / tan(x);function tan(x) => sin(x) / cos(x);print(tan(PI) ** 2 + cot(PI) ** 2);',
+    'function operate(x, y) {print(x + y);print(x - y);print(x * y);print(x / y);}',
+    'let msg = "Hello World" in print(msg);','let number = 42, text = "The meaning of life is" in print(text @ number);',
+    'let number = 42 in let text = "The meaning of life is" in print(text @ number);',
+    'let number = 42 in (let text = "The meaning of life is" in (print(text @ number)));',
+    'let a = 6, b = a * 7 in print(b);','let a = 6 in let b = a * 7 in print(b);',
+    'let a = 5, b = 10, c = 20 in {print(a+b);print(b*c);print(c/a);};','let a = (let b = 6 in b * 7) in print(a);',
+    'print(let b = 6 in b * 7);','let a = 20 in {let a = 42 in print(a);print(a);};','let a = 7, a = 7 * 6 in print(a);',
+    'let a = 7 in let a = 7 * 6 in print(a);','let a = 0 in {print(a);a := 1;print(a);};',
+    'let a = 0 in let b = a := 1 in {print(a);print(b);};',
+    'let a = 42 in if (a % 2 == 0) print("Even") else print("odd");'
+    ]
 
     for i in texts:
         tokens = lexer(i)
@@ -23,19 +37,26 @@ def init():
                 tokens_type.append(j.token_type)
         parse,operations = parser(tokens_type, get_shift_reduce=True)
 
+    new_tokens = []
+
+    for i in tokens:
+        if(i.token_type!='space'):
+            new_tokens.append(i)
+
     #region Semantic Checker
-    # ast = evaluate_reverse_parse(parse, operations, tokens)
+    ast = evaluate_reverse_parse(parse, operations, new_tokens)
 
-    # formatter = FormatVisitor()
-    # print(formatter.visit(ast))
+    formatter = FormatVisitor()
+    print(formatter.visit(ast))
 
-    # scope = Scope()
+    scope = Scope()
 
-    # semantic_checker = SemanticCheckerVisitor()
-    # errors = semantic_checker.visit(ast)
-    # for i, error in enumerate(errors,1):
-    #     print(f'{i}.', error)
+    semantic_checker = SemanticCheckerVisitor()
+    errors = semantic_checker.visit(ast)
+    for i, error in enumerate(errors,1):
+        print(f'{i}.', error)
 
     #endregion
     
 
+init()

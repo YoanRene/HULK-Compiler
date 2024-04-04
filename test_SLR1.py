@@ -4,6 +4,7 @@ from ParserSLR1 import SLR1Parser
 
 G=Grammar()
 
+#region terminals and non-terminals
 program = G.NonTerminal('<program>',True)
 
 expr = G.NonTerminal('<expr>')
@@ -44,6 +45,9 @@ semi, comma, double_dot, dot = G.Terminals('; , : .')
 sqrt, sin, cos, exp, log, rand = G.Terminals('sqrt sin cos exp log rand')   
 e, pi = G.Terminals('E PI')
 that = G.Terminal('||')
+#endregion
+
+#region productions
 
 program %= program + expr + semi
 program %= program + function_stat
@@ -196,6 +200,7 @@ args %= G.Epsilon
 args_in_par %= opar + args + cpar
 args_in_par %= G.Epsilon
 
+#endregion
 
 
 #region Lexer
@@ -294,6 +299,7 @@ lexer = Lexer([
 
 parser = SLR1Parser(G,True)
 
+#region tests
 
 texts =['42;' ,'print(42);','print((((1 + 2) ^ 3) * 4) / 5);','print("Hello World");','print("The message is \"Hello World\"");',
     'print("The meaning of life is " @ 42);','print(sin(2 * PI) ^ 2 + cos(3 * PI / log(4, 64)));',
@@ -352,6 +358,4 @@ for i in texts:
     parsed=parser(tokens_type)
     assert parsed!=None
 
-
-
-
+#endregion

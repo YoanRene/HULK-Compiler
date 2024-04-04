@@ -770,9 +770,6 @@ def semantic_checker_test():
 
 
 
-
-    
-
 #test_lexer()
 #hulk_grammar()
 #test_parser()

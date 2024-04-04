@@ -13,6 +13,7 @@ def evaluate_reverse_parse(right_parse, operations, tokens):
     right_parse = iter(right_parse)
     tokens = iter(tokens)
     stack = []
+
     for operation in operations:
         if operation == ShiftReduceParser.SHIFT:
             token = next(tokens)
@@ -38,191 +39,385 @@ def evaluate_reverse_parse(right_parse, operations, tokens):
     return stack[0]
 
 #region clases node
-class Node:
-    pass
-
-class ProgramNode(Node):
-    def __init__(self, statements,expr):
-        self.statements = statements
-        self.expr = expr
-        
-class StatementNode(Node):
-    pass
-        
-class ExpressionNode(Node):
-    pass
-
-class VarDeclarationNode(StatementNode): #let
-    def __init__(self, idx, expr):
-        self.id = idx
+class ProgramNode:
+    def __init__(self, program, expr):
+        self.program = program
         self.expr = expr
 
-class FuncDeclarationNode(StatementNode):
-    def __init__(self, idx, expr_list, expr):
-        self.id = idx
-        self.expr_list = expr_list
-        self.expr = expr
+    def evaluate(self):
+        # Implementación de la evaluación del programa
+        pass
 
-class PrintNode(StatementNode):
+class FunctionStatNode:
+    def __init__(self, function_, id_, params, id_extend, body):
+        self.function_ = function_
+        self.id_ = id_
+        self.params = params
+        self.id_extend = id_extend
+        self.body = body
+
+    def evaluate(self):
+        # Implementación de la evaluación de la declaración de función
+        pass
+
+class TypeStatNode:
+    def __init__(self, type_, id_, params_in_par, inherits_expr, decls_methods_semi):
+        self.type_ = type_
+        self.id_ = id_
+        self.params_in_par = params_in_par
+        self.inherits_expr = inherits_expr
+        self.decls_methods_semi = decls_methods_semi
+
+    def evaluate(self):
+        # Implementación de la evaluación de la declaración de tipo
+        pass
+
+class ProtocolStatNode:
+    def __init__(self, protocol, id_, extends_expr, method_protocol_list):
+        self.protocol = protocol
+        self.id_ = id_
+        self.extends_expr = extends_expr
+        self.method_protocol_list = method_protocol_list
+
+    def evaluate(self):
+        # Implementación de la evaluación de la declaración de protocolo
+        pass
+
+class MethodProtocolNode:
+    def __init__(self, id_, params, id_extend):
+        self.id_ = id_
+        self.params = params
+        self.id_extend = id_extend
+
+    def evaluate(self):
+        # Implementación de la evaluación del método de protocolo
+        pass
+
+class MethodNode:
+    def __init__(self, id_, params, id_extend, body):
+        self.id_ = id_
+        self.params = params
+        self.id_extend = id_extend
+        self.body = body
+
+    def evaluate(self):
+        # Implementación de la evaluación del método
+        pass
+
+class ExtendsExprNode:
+    def __init__(self, extends, id_):
+        self.extends = extends
+        self.id_ = id_
+
+    def evaluate(self):
+        # Implementación de la evaluación de la expresión de extensión
+        pass
+
+class InheritsExprNode:
+    def __init__(self, inherits, id_, args_in_par):
+        self.inherits = inherits
+        self.id_ = id_
+        self.args_in_par = args_in_par
+
+    def evaluate(self):
+        # Implementación de la evaluación de la expresión de herencia
+        pass
+
+class BodyNode:
     def __init__(self, expr):
         self.expr = expr
 
-class AtomicNode(ExpressionNode):
-    def __init__(self, lex):
-        self.lex = lex
-
-class BinaryNode(ExpressionNode):
-    def __init__(self, left, right):
-        self.left = left
-        self.right = right
-
-class ConstantNumNode(AtomicNode):
     def evaluate(self):
-        return float(self.lex)
-
-class VariableNode(AtomicNode):
-    def evaluate(self):
-        # Aquí implementa la lógica para obtener el valor de la variable
+        # Implementación de la evaluación del cuerpo
         pass
 
-class CallNode(AtomicNode):
-    def __init__(self, idx, args):
-        AtomicNode.__init__(self, idx)
-        self.args = args
+class ParamsNode:
+    def __init__(self, params_aux):
+        self.params_aux = params_aux
 
-class PlusNode(BinaryNode):
     def evaluate(self):
-        return self.left.evaluate() + self.right.evaluate()
-
-class MinusNode(BinaryNode):
-    def evaluate(self):
-        return self.left.evaluate() - self.right.evaluate()
-
-class StarNode(BinaryNode):
-    def evaluate(self):
-        return self.left.evaluate() * self.right.evaluate()
-
-class DivNode(BinaryNode):
-    def evaluate(self):
-        return self.left.evaluate() / self.right.evaluate()
-
-class WhileNode(ExpressionNode):
-    def __init__(self,boolean_expr,body):
-        self.boolean_expr = boolean_expr
-        self.body = body
-        
-
-
-class ForNode(ExpressionNode):
-    def __init__(self,boolean_expr,iterable,body):
-        self.boolean_expr = boolean_expr
-        self.iterable = iterable
-        self.body = body
-
-class IfNode(ExpressionNode):
-    def __init__(self,boolean_expr,expr,block_expr):
+        # Implementación de la evaluación de los parámetros
         pass
 
-class ElseNode(ExpressionNode):
-    def __init__(self,expr,block_expr):
-        pass
+class ParamsAuxNode:
+    def __init__(self, id_, type_):
+        self.id_ = id_
+        self.type_ = type_
 
-class Conditional_expr(ExpressionNode):
-    def __init__(self,if_expr,boolean_expr,expr,else_expr):
-        pass
-
-class Boolean_expr(ExpressionNode):
-    def __init__(self,boolean_expr,comp_op,boolean_term):
-        pass
-
-class ModNode(BinaryNode):
     def evaluate(self):
-        return self.left.evaluate() % self.right.evaluate()
-    
-class PowNode(BinaryNode):
+        # Implementación de la evaluación de los parámetros auxiliares
+        pass
+
+class ParamsInParNode:
+    def __init__(self, params):
+        self.params = params
+
     def evaluate(self):
-        return self.left.evaluate() ** self.right.evaluate()
-    
-class ProtocolNode(ExpressionNode):
-    def __init__(self, id, expr_list):
-        self.id = id
-        self.expr_list = expr_list
+        # Implementación de la evaluación de los parámetros entre paréntesis
+        pass
 
-class MethodNode(ExpressionNode):
-    def __init__(self, id, expr_list,id_ext):
-        self.id = id
-        self.expr_list = expr_list
-        self.id_ext = id_ext
-
-class DestructNode(ExpressionNode):
-    def __init__(self, id, expr_list):
-        self.id = id
-        self.expr_list = expr_list
-
-class AssignNode(ExpressionNode):
-    def __init__(self, id, expr):
-        self.id = id
+class ExprNode:
+    def __init__(self, expr_type, expr):
+        self.expr_type = expr_type
         self.expr = expr
 
-class Comparable_expression(ExpressionNode):
-    def __init__(self,numerical_expr,string_expr):
+    def evaluate(self):
+        # Implementación de la evaluación de la expresión
         pass
 
-class WhileNode(ExpressionNode):
-    def __init__(self,condition,body):
+class InstExprNode:
+    def __init__(self, new_, id_, args):
+        self.new_ = new_
+        self.id_ = id_
+        self.args = args
+
+    def evaluate(self):
+        # Implementación de la evaluación de la expresión de instanciación
         pass
 
-class ForNode(ExpressionNode):
-    def __init__(self,condition,body):
+class ArrayExprNode:
+    def __init__(self, new_, id_, expr):
+        self.new_ = new_
+        self.id_ = id_
+        self.expr = expr
+
+    def evaluate(self):
+        # Implementación de la evaluación de la expresión de arreglo
         pass
 
-class BlockNode(ExpressionNode):
-    def __init__(self,expr_list):
+class PrintExprNode:
+    def __init__(self, print_, expr):
+        self.print_ = print_
+        self.expr = expr
+
+    def evaluate(self):
+        # Implementación de la evaluación de la expresión de impresión
         pass
 
-class TypePropCallNode(AtomicNode):
-    def __init__(self, id,params):
+class LetExprNode:
+    def __init__(self, decls,expr_body):
+        self.decls = decls
+        self.expr_body = expr_body
+
+    def evaluate(self):
+        # Implementación de la evaluación de la expresión de declaración
         pass
 
-class UnaryNode(ExpressionNode):
-    def __init__(self,expr):
-        self.expr= expr
+class DestrExprNode:
+    def __init__(self, loc, expr):
+        self.loc = loc
+        self.expr = expr
 
-class UnaryNumOpNode(UnaryNode):
-    pass
+    def evaluate(self):
+        # Implementación de la evaluación de la expresión de destrucción
+        pass
 
-class UnaryLogOpNode(UnaryNode):
-    pass
+class WhileExprNode:
+    def __init__(self, expr, expr_body):
+        self.expr = expr
+        self.expr_body = expr_body
 
-class SqrtNode(UnaryNumOpNode):
-    pass
+    def evaluate(self):
+        # Implementación de la evaluación de la expresión de ciclo while
+        pass
 
-class SinNode(UnaryNumOpNode):
-    pass
+class ForExprNode:
+    def __init__(self,id_, expr, expr_body):
+        self.id_ = id_
+        self.expr = expr
+        self.expr_body = expr_body
 
-class CosNode(UnaryNumOpNode):
-    pass
+    def evaluate(self):
+        # Implementación de la evaluación de la expresión de ciclo for
+        pass
 
-class ExpNode(UnaryNumOpNode):
-    pass
+class IfExprNode:
+    def __init__(self,expr, expr_body, elif_expr):
+        self.expr = expr
+        self.expr_body = expr_body
+        self.elif_expr = elif_expr
 
-class NotNode(UnaryLogOpNode):
-    pass
+    def evaluate(self):
+        # Implementación de la evaluación de la expresión condicional if
+        pass
 
-class PowNode(BinaryNode):
-    pass
+class ElifExprNode:
+    def __init__(self, expr, expr_body, elif_expr):
+        self.expr = expr
+        self.expr_body = expr_body
+        self.elif_expr = elif_expr
 
-class LogNode(BinaryNode):
-    pass
+    def evaluate(self):
+        # Implementación de la evaluación de la expresión condicional elif
+        pass
 
-class AndNode(BinaryNode):
-    pass
+class ElseExprNode:
+    def __init__(self, expr_body):
+        self.expr_body = expr_body
 
-class OrNode(BinaryNode):
-    pass
+    def evaluate(self):
+        # Implementación de la evaluación de la expresión condicional else
+        pass
 
-class ConcatNode(BinaryNode): ##
-    pass 
+class DeclNode:
+    def __init__(self, id_, id_extend, expr):
+        self.id_ = id_
+        self.id_extend = id_extend
+        self.expr = expr
+
+    def evaluate(self):
+        # Implementación de la evaluación de la declaración
+        pass
+
+class DeclsNode:
+    def __init__(self, decls, decl):
+        self.decls = decls
+        self.decl = decl
+
+    def evaluate(self):
+        # Implementación de la evaluación del conjunto de declaraciones
+        pass
+
+class ExprBodyNode:
+    def __init__(self, expr):
+        self.expr = expr
+
+    def evaluate(self):
+        # Implementación de la evaluación del cuerpo de la expresión
+        pass
+
+class ExprListSemiNode:
+    def __init__(self, expr_list_semi, expr):
+        self.expr_list_semi = expr_list_semi
+        self.expr = expr
+
+    def evaluate(self):
+        # Implementación de la evaluación de la lista de expresiones separadas por punto y coma
+        pass
+
+class IdExtendNode:
+    def __init__(self, id_):
+        self.id_ = id_
+
+    def evaluate(self):
+        # Implementación de la evaluación de la extensión de identificador
+        pass
+
+class ExprElemNode:
+    def __init__(self, expr_elem, as_expr):
+        self.expr_elem = expr_elem
+        self.as_expr = as_expr
+
+    def evaluate(self):
+        # Implementación de la evaluación del elemento de expresión
+        pass
+
+class AsExprNode:
+    def __init__(self, as_expr, logic_concat_expr):
+        self.as_expr = as_expr
+        self.logic_concat_expr = logic_concat_expr
+
+    def evaluate(self):
+        # Implementación de la evaluación de la expresión de conversión de tipo
+        pass
+
+class LogicConcatExprNode:
+    def __init__(self, logic_concat_expr, comp_expr):
+        self.logic_concat_expr = logic_concat_expr
+        self.comp_expr = comp_expr
+
+    def evaluate(self):
+        # Implementación de la evaluación de la expresión de concatenación lógica
+        pass
+
+class CompExprNode:
+    def __init__(self, comp_expr, aritm_expr):
+        self.comp_expr = comp_expr
+        self.aritm_expr = aritm_expr
+
+    def evaluate(self):
+        # Implementación de la evaluación de la expresión de comparación
+        pass
+
+class AritmExprNode:
+    def __init__(self, aritm_expr, term):
+        self.aritm_expr = aritm_expr
+        self.term = term
+
+    def evaluate(self):
+        # Implementación de la evaluación de la expresión aritmética
+        pass
+
+class TermNode:
+    def __init__(self, term, pow_expr):
+        self.term = term
+        self.pow_expr = pow_expr
+
+    def evaluate(self):
+        # Implementación de la evaluación del término aritmético
+        pass
+
+class PowExprNode:
+    def __init__(self, pow_expr, negative):
+        self.pow_expr = pow_expr
+        self.negative = negative
+
+    def evaluate(self):
+        # Implementación de la evaluación de la expresión de potencia
+        pass
+
+class NegativeNode:
+    def __init__(self, factor):
+        self.factor = factor
+
+    def evaluate(self):
+        # Implementación de la evaluación de la expresión negativa
+        pass
+
+class FactorNode:
+    def __init__(self, expr, params_aux,expr2):
+        self.expr = expr
+        self.params_aux = params_aux
+        self.expr2 = expr2
+
+    def evaluate(self):
+        # Implementación de la evaluación del factor de expresión
+        pass
+
+class LocNode:
+    def __init__(self, loc, id_, args_in_par):
+        self.loc = loc
+        self.id_ = id_
+        self.args_in_par = args_in_par
+
+    def evaluate(self):
+        # Implementación de la evaluación de la ubicación
+        pass
+
+class ArgsNode:
+    def __init__(self, args_aux):
+        self.args_aux = args_aux
+
+    def evaluate(self):
+        # Implementación de la evaluación de los argumentos
+        pass
+
+class ArgsAuxNode:
+    def __init__(self, args_aux, expr):
+        self.args_aux = args_aux
+        self.expr = expr
+
+    def evaluate(self):
+        # Implementación de la evaluación de los argumentos auxiliares
+        pass
+
+class ArgsInParNode:
+    def __init__(self, args):
+        self.args = args
+
+    def evaluate(self):
+        # Implementación de la evaluación de los argumentos entre paréntesis
+        pass
 
 #endregion
 
@@ -237,24 +432,24 @@ class FormatVisitor(object):
         statements = '\n'.join(self.visit(child, tabs + 1) for child in node.statements)
         return f'{ans}\n{statements}'
     
-    @visitor.when(PrintNode)
+    @visitor.when(PrintExprNode)
     def visit(self, node, tabs=0):
-        ans = '\t' * tabs + f'\\__PrintNode <expr>'
+        ans = '\t' * tabs + f'\\__PrintExprNode <expr>'
         expr = self.visit(node.expr, tabs + 1)
         return f'{ans}\n{expr}'
     
-    @visitor.when(VarDeclarationNode)
-    def visit(self, node, tabs=0):
-        ans = '\t' * tabs + f'\\__VarDeclarationNode: let {node.id} = <expr>'
-        expr = self.visit(node.expr, tabs + 1)
-        return f'{ans}\n{expr}'
+    # @visitor.when(VarDeclarationNode)
+    # def visit(self, node, tabs=0):
+    #     ans = '\t' * tabs + f'\\__VarDeclarationNode: let {node.id} = <expr>'
+    #     expr = self.visit(node.expr, tabs + 1)
+    #     return f'{ans}\n{expr}'
     
-    @visitor.when(FuncDeclarationNode)
-    def visit(self, node, tabs=0):
-        params = ', '.join(node.params)
-        ans = '\t' * tabs + f'\\__FuncDeclarationNode: def {node.id}({params}) -> <expr>'
-        body = self.visit(node.body, tabs + 1)
-        return f'{ans}\n{body}'
+    # @visitor.when(FuncDeclarationNode)
+    # def visit(self, node, tabs=0):
+    #     params = ', '.join(node.params)
+    #     ans = '\t' * tabs + f'\\__FuncDeclarationNode: def {node.id}({params}) -> <expr>'
+    #     body = self.visit(node.body, tabs + 1)
+    #     return f'{ans}\n{body}'
 
     @visitor.when(BinaryNode)
     def visit(self, node, tabs=0):
@@ -267,11 +462,11 @@ class FormatVisitor(object):
     def visit(self, node, tabs=0):
         return '\t' * tabs + f'\\__ {node.__class__.__name__}: {node.lex}'
     
-    @visitor.when(CallNode)
-    def visit(self, node, tabs=0):
-        ans = '\t' * tabs + f'\\__CallNode: {node.lex}(<expr>, ..., <expr>)'
-        args = '\n'.join(self.visit(arg, tabs + 1) for arg in node.args)
-        return f'{ans}\n{args}'
+    # @visitor.when(CallNode)
+    # def visit(self, node, tabs=0):
+    #     ans = '\t' * tabs + f'\\__CallNode: {node.lex}(<expr>, ..., <expr>)'
+    #     args = '\n'.join(self.visit(arg, tabs + 1) for arg in node.args)
+    #     return f'{ans}\n{args}'
     
 
 class VariableInfo:
@@ -349,41 +544,41 @@ class SemanticCheckerVisitor(object):
             self.visit(statement_node, scope)
         return self.errors
     
-    @visitor.when(VarDeclarationNode)
-    def visit(self, node, scope):
-        self.visit(node.expr, scope) 
-        if not scope.define_variable(node.id):
-            self.errors.append(f'Variable {node.id} is already defined in current scope.')       
+    # @visitor.when(VarDeclarationNode)
+    # def visit(self, node, scope):
+    #     self.visit(node.expr, scope) 
+    #     if not scope.define_variable(node.id):
+    #         self.errors.append(f'Variable {node.id} is already defined in current scope.')       
     
-    @visitor.when(FuncDeclarationNode)
-    def visit(self, node, scope):
-        inner_scope = scope.create_child_scope()
-        for param in node.params:
-            if not inner_scope.define_variable(param):
-                self.errors.append(f'Function {node.id} is invalid, its arguments have to be different from each other.')
-        self.visit(node.body,inner_scope)
-        if not scope.define_function(node.id, node.params):
-            self.errors.append(f'Function {node.id} is already defined with {len(node.params)} arguments.')
+    # @visitor.when(FuncDeclarationNode)
+    # def visit(self, node, scope):
+    #     inner_scope = scope.create_child_scope()
+    #     for param in node.params:
+    #         if not inner_scope.define_variable(param):
+    #             self.errors.append(f'Function {node.id} is invalid, its arguments have to be different from each other.')
+    #     self.visit(node.body,inner_scope)
+    #     if not scope.define_function(node.id, node.params):
+    #         self.errors.append(f'Function {node.id} is already defined with {len(node.params)} arguments.')
     
-    @visitor.when(PrintNode)
+    @visitor.when(PrintExprNode)
     def visit(self, node, scope):
         self.visit(node.expr, scope)
     
-    @visitor.when(ConstantNumNode)
-    def visit(self, node, scope):
-        pass
+    # @visitor.when(ConstantNumNode)
+    # def visit(self, node, scope):
+    #     pass
     
-    @visitor.when(VariableNode)
-    def visit(self, node, scope):
-        if not scope.is_var_defined(node.lex):
-            self.errors.append(f'Variable {node.lex} is not defined.')
+    # @visitor.when(VariableNode)
+    # def visit(self, node, scope):
+    #     if not scope.is_var_defined(node.lex):
+    #         self.errors.append(f'Variable {node.lex} is not defined.')
     
-    @visitor.when(CallNode)
-    def visit(self, node, scope):
-        for argument_node in node.args:
-            self.visit(argument_node,scope)
-        if not scope.is_func_defined(node.lex,len(node.args)):
-            self.errors.append(f'Function {node.lex} is not defined with {len(node.args)} arguments.')
+    # @visitor.when(CallNode)
+    # def visit(self, node, scope):
+    #     for argument_node in node.args:
+    #         self.visit(argument_node,scope)
+    #     if not scope.is_func_defined(node.lex,len(node.args)):
+    #         self.errors.append(f'Function {node.lex} is not defined with {len(node.args)} arguments.')
     
     @visitor.when(BinaryNode)
     def visit(self, node, scope):
