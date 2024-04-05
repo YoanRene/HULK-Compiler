@@ -815,14 +815,304 @@ class SemanticCheckerVisitor(object):
     @visitor.on('node')
     def visit(self, node, scope):
         pass
-    
+
+
+
+    ##################Parte de nosotros
+
     @visitor.when(ProgramNode)
     def visit(self, node, scope=None):
         if scope is None:
             scope = Scope()
-        for statement_node in node.statements:
-            self.visit(statement_node, scope)
+        self.visit(node.expr, scope)
+        self.visit(node.program, scope)
         return self.errors
+
+    @visitor.when(FunctionStatNode)
+    def visit(self, node, scope):
+        if not scope.define_function(node.id_, node.params):
+            self.errors.append(f'Function {node.id} is already defined in current scope.')
+        inner_scope = scope.create_child_scope()
+        for param in node.params:
+            if not inner_scope.define_variable(param):
+                self.errors.append(f'Function {node.id_} is invalid, its arguments have to be different from each other.')
+        self.visit(node.body, inner_scope)
+
+    @visitor.when(TypeStatNode)
+    def visit(self, node, scope):
+        if not scope.define_variable(node.id_):
+            self.errors.append(f'Variable {node.id_} is already defined in current scope.')
+        
+        if not scope.is_var_defined(node.inherit):
+            self.errors.append(f'Variable {node.inherit} is not defined in current scope.')###############
+        
+        inner_scope = scope.create_child_scope()
+        for param in node.params_in_par:
+            if not inner_scope.define_variable(param):
+                self.errors.append(f'Function {node.id_} is invalid, its arguments have to be different from each other.')
+
+        
+        self.visit(node.decls_methods_semi, inner_scope)
+
+    @visitor.when(ProtocolStatNode)
+    def visit(self, node, scope):
+        if not scope.define_variable(node.id_):
+            self.errors.append(f'Variable {node.id_} is already defined in current scope.')
+        if not scope.is_var_defined(node.id_extends):
+            self.errors.append(f'Variable {node.id_extends} is not defined in current scope.')
+        inner_scope = scope.create_child_scope()
+
+        self.visit(node.method_protocol_list, inner_scope)
+
+    @visitor.when(MethodProtocolNode)
+    def visit(self, node, scope):
+        if not scope.define_function(node.id_, node.params):
+            self.errors.append(f'Function {node.id_} is already defined in current scope.')
+        if not scope.is_func_defined(node.id_extends, len(node.params)):
+            self.errors.append(f'Function {node.id_extends} is not defined in current scope.')
+
+        inner_scope = scope.create_child_scope()
+        for param in node.params:
+            if not inner_scope.define_variable(param):
+                self.errors.append(f'Function {node.id_} is invalid, its arguments have to be different from each other.')
+    
+    @visitor.when(MethodNode)
+    def visit(self, node, scope):
+        if not scope.define_function(node.id_, node.params):
+            self.errors.append(f'Function {node.id_} is already defined in current scope.')
+        if not scope.is_func_defined(node.id_extends, len(node.params)):
+            self.errors.append(f'Function {node.id_extends} is not defined in current scope.')
+        inner_scope = scope.create_child_scope()
+        for param in node.params:
+            if not inner_scope.define_variable(param):
+                self.errors.append(f'Function {node.id_} is invalid, its arguments have to be different from each other.')
+        self.visit(node.body, inner_scope)
+
+    @visitor.when(ExtendsExprNode)
+    def visit(self, node, scope):
+        pass
+
+    @visitor.when(InheritsExprNode)
+    def visit(self, node, scope):
+        pass##################################################
+
+    @visitor.when(BodyNode)
+    def visit(self, node, scope):
+        for exp in node.exprs:
+            self.visit(exp, scope)
+
+    @visitor.when(ParamsNode)
+    def visit(self, node, scope):
+        self.visit(node.params_aux, scope)
+
+    @visitor.when(ParamsAuxNode)
+    def visit(self, node, scope):
+        if not scope.define_variable(node.id_):
+            self.errors.append(f'Variable {node.id_} is already defined in current scope.')
+
+        if not scope.is_var_defined(node.id_extends):
+            self.errors.append(f'Variable {node.id_extends} is not defined in current scope.')
+        
+    @visitor.when(ParamsInParNode)
+    def visit(self, node, scope):
+        self.visit(node.params, scope)
+
+    @visitor.when(InstExprNode)
+    def visit(self, node, scope):
+        if not scope.is_var_defined(node.id_):
+            self.errors.append(f'Variable {node.id_} is not defined in current scope.')
+
+        ########cantidad de parametros
+        if not scope.is_func_defined(node.id_, len(node.params)):
+            self.errors.append(f'Function {node.id_} is not defined in current scope.')########cambiar nombre de error
+        
+    
+    @visitor.when(ArrayExprNode)
+    def visit(self, node, scope):
+        if not scope.is_var_defined(node.id_):
+            self.errors.append(f'Variable {node.id_} is not defined in current scope.')
+        self.visit(node.expr, scope)
+
+    @visitor.when(PrintExprNode)
+    def visit(self, node, scope):
+        self.visit(node.expr, scope)
+
+    @visitor.when(LetExprNode)
+    def visit(self, node, scope):
+        inner_scope = scope.create_child_scope()
+        for decl in node.decls:##########################3
+            self.visit(decl, inner_scope)
+        self.visit(node.expr_body, inner_scope)
+
+    @visitor.when(DestrExprNode)
+    def visit(self, node, scope):
+        self.visit(node.expr, scope)
+        self.visit(node.loc, scope)
+
+    @visitor.when(WhileExprNode)
+    def visit(self, node, scope):
+        #generame un if de si node.expr es una instancia de LogicConcatExprNode o un CompExprNode
+        if node.expr.__class__.__name__ == 'LogicConcatExprNode' or node.expr.__class__.__name__ == 'CompExprNode':
+            self.visit(node.expr, scope)
+        else:
+            self.errors.append(f'While condition must be a boolean expression.')
+        inner_scope = scope.create_child_scope()
+        self.visit(node.expr_body, inner_scope)
+
+    @visitor.when(ForExprNode)
+    def visit(self, node, scope):
+        inner_scope = scope.create_child_scope()
+        self.visit(node.expr_body, inner_scope)
+    
+    @visitor.when(IfExprNode)
+    def visit(self, node, scope):
+        #generame un if de si node.expr es una instancia de LogicConcatExprNode o un CompExprNode
+        if node.expr.__class__.__name__ == 'LogicConcatExprNode' or node.expr.__class__.__name__ == 'CompExprNode':
+            self.visit(node.expr, scope)
+        else:
+            self.errors.append(f'If condition must be a boolean expression.')
+        inner_scope = scope.create_child_scope()
+        self.visit(node.expr_body, inner_scope)
+        self.visit(node.elif_expr, inner_scope)
+
+    @visitor.when(ElifExprNode)#######
+    def visit(self, node, scope):
+        if node.expr is not None:
+            #generame un if de si node.expr es una instancia de LogicConcatExprNode o un CompExprNode
+            if node.expr.__class__.__name__ == 'LogicConcatExprNode' or node.expr.__class__.__name__ == 'CompExprNode':
+                self.visit(node.expr, scope)
+            else:
+                self.errors.append(f'Elif condition must be a boolean expression.')
+            inner_scope = scope.create_child_scope()
+            self.visit(node.expr_body, inner_scope)
+            self.visit(node.elif_expr, inner_scope)
+    
+    @visitor.when(ElseExprNode)
+    def visit(self, node, scope):
+        inner_scope = scope.create_child_scope()
+        self.visit(node.expr_body, inner_scope)
+
+    @visitor.when(DeclNode)
+    def visit(self, node, scope):
+        if not scope.define_variable(node.id_):
+            self.errors.append(f'Variable {node.id_} is already defined in current scope.')
+        if scope.is_var_defined(node.id_extend.id_):
+            self.errors.append(f'Variable {node.id_extend.id_} is not defined in current scope.')
+        self.visit(node.expr, scope)
+
+    @visitor.when(DeclsNode)
+    def visit(self, node, scope):
+        self.visit(node.decls, scope)
+        self.visit(node.decl, scope)
+    
+    @visitor.when(ExprBodyNode)
+    def visit(self, node, scope):
+        self.visit(node.expr, scope)
+    
+    @visitor.when(ExprListSemiNode)
+    def visit(self, node, scope):
+        self.visit(node.expr, scope)
+        self.visit(node.expr_list_semi, scope)
+
+    @visitor.when(IdExtendNode) ###################
+    def visit(self, node, scope):
+        if not scope.is_var_defined(node.id_):
+            self.errors.append(f'Variable {node.id_} is not defined in current scope.')
+    
+    @visitor.when(ExprElemNode)
+    def visit(self, node, scope):
+        self.visit(node.expr_elem, scope)
+        self.visit(node.as_expr, scope)
+
+    @visitor.when(AsExprNode)
+    def visit(self, node, scope):
+        self.visit(node.as_expr, scope)
+        self.visit(node.logic_concat_expr, scope)
+
+    @visitor.when(LogicConcatExprNode)
+    def visit(self, node, scope):
+        self.visit(node.logic_concat_expr, scope)
+        self.visit(node.comp_expr, scope)
+    
+    @visitor.when(CompExprNode)
+    def visit(self, node, scope):
+        self.visit(node.comp_expr, scope)
+        self.visit(node.aritm_expr, scope)
+
+    @visitor.when(AritmExprNode)
+    def visit(self, node, scope):
+        self.visit(node.aritm_expr, scope)
+        self.visit(node.term, scope)
+
+    @visitor.when(TermNode)
+    def visit(self, node, scope):
+        self.visit(node.term, scope)
+        self.visit(node.pow_expr, scope)
+
+    @visitor.when(PowExprNode)
+    def visit(self, node, scope):
+        self.visit(node.pow_expr, scope)
+        self.visit(node.negative, scope)
+
+    @visitor.when(NegativeNode)
+    def visit(self, node, scope):
+        self.visit(node.factor, scope)
+    
+    @visitor.when(FactorNode)
+    def visit(self, node, scope):
+        self.visit(node.expr, scope)
+        self.visit(node.params_aux, scope)
+        self.visit(node.expr2, scope)
+
+    @visitor.when(LocNode)
+    def visit(self, node, scope):
+        if not scope.is_var_defined(node.id_):
+            self.errors.append(f'Variable {node.id_} is not defined in current scope.')
+        self.visit(node.args_in_par, scope)
+    
+    @visitor.when(ArgsNode)
+    def visit(self, node, scope):
+        self.visit(node.args_aux, scope)
+    
+    @visitor.when(ArgsAuxNode)
+    def visit(self, node, scope):
+        self.visit(node.args_aux, scope)
+        self.visit(node.expr, scope)
+    
+    @visitor.when(ArgsInParNode)
+    def visit(self, node, scope):
+        self.visit(node.args, scope)
+    
+
+    
+
+
+    
+
+
+        
+
+    
+
+    
+
+        
+
+
+
+    
+
+
+
+    ####################################
+    
+    # @visitor.when(ProgramNode)
+    # def visit(self, node, scope=None):
+    #     if scope is None:
+    #         scope = Scope()
+    #     for statement_node in node.statements:
+    #         self.visit(statement_node, scope)
+    #     return self.errors
     
     # @visitor.when(VarDeclarationNode)
     # def visit(self, node, scope):
@@ -840,9 +1130,9 @@ class SemanticCheckerVisitor(object):
     #     if not scope.define_function(node.id, node.params):
     #         self.errors.append(f'Function {node.id} is already defined with {len(node.params)} arguments.')
     
-    @visitor.when(PrintExprNode)
-    def visit(self, node, scope):
-        self.visit(node.expr, scope)
+    # @visitor.when(PrintExprNode)
+    # def visit(self, node, scope):
+    #     self.visit(node.expr, scope)
     
     # @visitor.when(ConstantNumNode)
     # def visit(self, node, scope):
@@ -860,7 +1150,7 @@ class SemanticCheckerVisitor(object):
     #     if not scope.is_func_defined(node.lex,len(node.args)):
     #         self.errors.append(f'Function {node.lex} is not defined with {len(node.args)} arguments.')
     
-    @visitor.when(BinaryNode)
-    def visit(self, node, scope):
-        self.visit(node.left,scope)
-        self.visit(node.right,scope)
+    # @visitor.when(BinaryNode)
+    # def visit(self, node, scope):
+    #     self.visit(node.left,scope)
+    #     self.visit(node.right,scope)
