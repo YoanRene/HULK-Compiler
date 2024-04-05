@@ -29,25 +29,38 @@ def init():
     'let a = 42 in if (a % 2 == 0) print("Even") else print("odd");'
     ]
 
+    parserslist = []
+    operationslist=[]
+    tokenslist = []
+
     for i in texts:
         tokens = lexer(i)
+        tokenslist.append(tokens)
         tokens_type = []
         for j in tokens:
             if j.token_type!='space':
                 tokens_type.append(j.token_type)
         parse,operations = parser(tokens_type, get_shift_reduce=True)
+        parserslist.append(parse)
+        operationslist.append(operations)
 
-    new_tokens = []
+    astlist = []
 
-    for i in tokens:
-        if(i.token_type!='space'):
-            new_tokens.append(i)
+    for j in range(len(parserslist)):
+        new_tokens = []
 
-    #region Semantic Checker
-    ast = evaluate_reverse_parse(parse, operations, new_tokens)
+        for i in tokenslist[j]:
+            if(i.token_type!='space'):
+                new_tokens.append(i)
+
+        #region Semantic Checker
+        ast = evaluate_reverse_parse(parserslist[j], operationslist[j], new_tokens)
+        astlist.append(ast)
+
 
     formatter = FormatVisitor()
-    print(formatter.visit(ast))
+    for i in range(len(astlist)):
+        print(formatter.visit(astlist[i]))
 
     scope = Scope()
 

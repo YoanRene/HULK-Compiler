@@ -80,11 +80,11 @@ def HulkGrammar():
     body %= arrow + expr + semi , lambda h,s: BodyNode(s[2])
     body %= okey + expr_list_semi + ckey , lambda h,s: BodyNode(s[2])
 
-    params_aux %= id_ + id_extend  , lambda h,s: ParamsAuxNode(s[1],s[2])
-    params_aux %= params_aux + comma + id_ + id_extend, lambda h,s: s[1] + [ParamsAuxNode(s[3],s[4])]
+    params_aux %= id_ + id_extend  , lambda h,s: ParamsAuxNode(None,s[1],s[2])
+    params_aux %= params_aux + comma + id_ + id_extend, lambda h,s:[ParamsAuxNode(s[1],s[3],s[4])]
 
     params %= params_aux , lambda h,s: ParamsNode(s[1])
-    params %= G.Epsilon , lambda h,s: ParamsNode([])
+    params %= G.Epsilon , lambda h,s: ParamsNode(None)
 
     params_in_par %= opar + params + cpar , lambda h,s: ParamsInParNode(s[2])
     params_in_par %= G.Epsilon , lambda h,s: ParamsInParNode(None)
@@ -129,7 +129,7 @@ def HulkGrammar():
     expr_body %= okey + expr_list_semi + ckey , lambda h,s: ExprBodyNode(s[2])
 
     expr_list_semi %= expr_list_semi + expr + semi , lambda h,s: ExprListSemiNode(s[1],s[2])
-    expr_list_semi %= expr + semi , lambda h,s: ExprListSemiNode([s[1]])
+    expr_list_semi %= expr + semi , lambda h,s: ExprListSemiNode(None,s[1])
 
     id_extend %= double_dot + id_ , lambda h,s: IdExtendNode(s[2])
     id_extend %= G.Epsilon , lambda h,s: IdExtendNode(None)
@@ -193,8 +193,8 @@ def HulkGrammar():
     args_aux %= expr  , lambda h,s: ArgsAuxNode(s[1],None)
     args_aux %= args_aux + comma + expr , lambda h,s: ArgsAuxNode(s[1],s[3])
 
-    args %= args_aux , lambda h,s: ArgsNode(s[1],None)
-    args %= G.Epsilon , lambda h,s: ArgsNode(None,None)
+    args %= args_aux , lambda h,s: ArgsNode(s[1])
+    args %= G.Epsilon , lambda h,s: ArgsNode(None)
 
     args_in_par %= opar + args + cpar , lambda h,s: ArgsInParNode(s[2])
     args_in_par %= G.Epsilon , lambda h,s: ArgsInParNode(None)

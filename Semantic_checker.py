@@ -135,7 +135,8 @@ class ParamsNode:
         pass
 
 class ParamsAuxNode:
-    def __init__(self, id_, id_extend):
+    def __init__(self,params_aux, id_, id_extend):
+        self.params_aux=params_aux
         self.id_ = id_
         self.id_extend = id_extend
 
@@ -509,7 +510,7 @@ class FormatVisitor(object):
     @visitor.when(BodyNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__BodyNode <expr>; ... <expr>;'
-        expr = '\n'.join(self.visit(child, tabs + 1) for child in node.expr)
+        expr = self.visit(node.expr, tabs + 1)
         return f'{ans}\n{expr}'
     
     @visitor.when(ParamsAuxNode)
