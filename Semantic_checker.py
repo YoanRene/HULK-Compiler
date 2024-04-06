@@ -413,6 +413,30 @@ class ArgsInParNode:
         # Implementación de la evaluación de los argumentos entre paréntesis
         pass
 
+class NumNode: 
+    def __init__(self, value):
+        self.value= value
+
+    def evaluate(self):
+        # Implementación de la evaluación del número
+        pass
+
+class BoolNode:
+    def __init__(self, value):
+        self.value= value
+
+    def evaluate(self):
+        # Implementación de la evaluación del booleano
+        pass
+
+class StrNode:
+    def __init__(self, value):
+        self.value= value
+
+    def evaluate(self):
+        # Implementación de la evaluación de la cadena de texto
+        pass
+
 #endregion
 
 class FormatVisitor(object):
@@ -718,6 +742,18 @@ class FormatVisitor(object):
         args = self.visit(node.args, tabs + 1)
         return f'{ans}\n{args}'
     
+    @visitor.when(NumNode)
+    def visit(self, node, tabs=0):
+        return '\t' * tabs + f'\\__NumNode: {node.value}'
+    
+    @visitor.when(BoolNode)
+    def visit(self, node, tabs=0):
+        return '\t' * tabs + f'\\__BoolNode: {node.value}'
+    
+    @visitor.when(StrNode)
+    def visit(self, node, tabs=0):
+        return '\t' * tabs + f'\\__StrNode: {node.value}'
+    
 
     # @visitor.when(VarDeclarationNode)
     # def visit(self, node, tabs=0):
@@ -816,8 +852,6 @@ class SemanticCheckerVisitor(object):
     @visitor.on('node')
     def visit(self, node, scope):
         pass
-
-
 
     ##################Parte de nosotros
 
@@ -1047,6 +1081,7 @@ class SemanticCheckerVisitor(object):
     
     @visitor.when(CompExprNode)
     def visit(self, node, scope):
+        
         self.visit(node.comp_expr, scope)
         self.visit(node.aritm_expr, scope)
 

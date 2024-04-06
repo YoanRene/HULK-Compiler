@@ -1,6 +1,7 @@
 from Grammar import *
 from Lexer import *
 from Semantic_checker import *
+import math
 
 
 def HulkGrammar():
@@ -29,6 +30,7 @@ def HulkGrammar():
     args, args_aux, args_in_par = G.NonTerminals('<args> <args-aux> <args-in-par>')
     expr_dot = G.NonTerminal('<expr-dot>')
     negative = G.NonTerminal('<negative>')
+    
 
     type_, inherits, extends, protocol, new_ = G.Terminals('type inherits extends protocol new')
     function_, arrow = G.Terminals('function =>')
@@ -172,16 +174,16 @@ def HulkGrammar():
     negative %= factor , lambda h,s: NegativeNode(s[1])
 
     factor %= opar + expr + cpar , lambda h,s: FactorNode(s[2],None,None)
-    factor %= num , lambda h,s: FactorNode(s[1],None,None)
-    factor %= string , lambda h,s: FactorNode(s[1],None,None)
+    factor %= num , lambda h,s: NumNode(s[1])
+    factor %= string , lambda h,s: StrNode(s[1])
     factor %= sqrt + opar + expr + cpar , lambda h,s: FactorNode(s[3],None,None)
     factor %= sin + opar + expr + cpar , lambda h,s: FactorNode(s[3],None,None)
     factor %= cos + opar + expr + cpar , lambda h,s: FactorNode(s[3],None,None)
     factor %= exp + opar + expr + cpar , lambda h,s: FactorNode(s[3],None,None)
     factor %= log + opar + expr + comma + expr + cpar , lambda h,s: FactorNode(s[3],s[5],None)
     factor %= rand + opar + cpar , lambda h,s: FactorNode(None,None,None)
-    factor %= e , lambda h,s: FactorNode(None,None,None)
-    factor %= pi , lambda h,s: FactorNode(None,None,None)
+    factor %= e , lambda h,s: NumNode(math.e)
+    factor %= pi , lambda h,s: NumNode(math.pi)
     factor %= loc , lambda h,s: FactorNode(s[1],None,None)
     factor %= oindex + args + cindex  , lambda h,s: FactorNode(s[2],None,None)
     factor %= oindex + expr + that + params_aux + in_ + expr + cindex , lambda h,s: FactorNode(s[2],s[4],s[6]) 

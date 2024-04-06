@@ -30,7 +30,8 @@ def init():
     'while(5){print("hola");};',
     'while(x==1){print("hola");};',
     'if(5){print("hola");}else{print("la");};',
-    'if(x==1){print("hola");}else{print("la");};'
+    'if(x==1){print("hola");}else{print("la");};',
+    '(a & b) == (b & c);'
     ]
 
     parserslist = []
