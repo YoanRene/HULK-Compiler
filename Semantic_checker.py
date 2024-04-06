@@ -48,6 +48,24 @@ class ProgramNode:
         # Implementación de la evaluación del programa
         pass
 
+class BlockExprListNode:
+    def __init__(self, block_expr_list,expr):
+        self.block_expr_list = block_expr_list
+        self.expr = expr
+
+    def evaluate(self):
+        # Implementación de la evaluación de la lista de bloques de expresiones
+        pass
+
+class LetOptionalNode:
+    def __init__(self, let_optional):
+        self.let_optional = let_optional
+
+    def evaluate(self):
+        # Implementación de la evaluación de la opción de let
+        pass
+
+
 class FunctionStatNode:
     def __init__(self,id_, params, id_extend, body):
         self.id_ = id_

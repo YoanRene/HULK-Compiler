@@ -30,6 +30,8 @@ def HulkGrammar():
     args, args_aux, args_in_par = G.NonTerminals('<args> <args-aux> <args-in-par>')
     expr_dot = G.NonTerminal('<expr-dot>')
     negative = G.NonTerminal('<negative>')
+    let_optional = G.NonTerminal('<let-optional>')
+    block_expr_semi_list = G.NonTerminal('<block-expr-semi-list>')
     
 
     type_, inherits, extends, protocol, new_ = G.Terminals('type inherits extends protocol new')
@@ -54,8 +56,13 @@ def HulkGrammar():
     program %= program + function_stat , lambda h,s: ProgramNode(s[1],s[2])
     program %= program + protocol_stat , lambda h,s: ProgramNode(s[1],s[2])
     program %= program + type_stat , lambda h,s: ProgramNode(s[1],s[2])
+    program %= program + okey + block_expr_semi_list + ckey , lambda h,s: ProgramNode(s[1],s[3])
     program %= G.Epsilon  , lambda h,s: ProgramNode(None,None)
 
+    block_expr_semi_list %= block_expr_semi_list + okey + block_expr_semi_list + ckey, lambda h,s : BlockExprListNode(s[1],s[3])
+    block_expr_semi_list %= block_expr_semi_list + expr + semi , lambda h,s : BlockExprListNode(s[1],[s[2]])
+    block_expr_semi_list %= G.Epsilon , lambda h,s : BlockExprListNode(None,None)
+    
     function_stat %= function_ + id_ + opar + params + cpar + id_extend + body ,lambda h,s: FunctionStatNode(s[2],s[4],s[6],s[7])
 
     type_stat %= type_ + id_ + params_in_par + inherits_expr + okey + decls_methods_semi  + ckey , lambda h,s: TypeStatNode(s[2],s[4],s[6])
@@ -109,6 +116,9 @@ def HulkGrammar():
 
     let_expr %= let + decls + in_ + expr_body , lambda h,s: LetExprNode(s[2],s[4])
 
+    let_optional %= let , lambda h,s: LetOptionalNode(s[1])
+    let_optional %= G.Epsilon , lambda h,s: LetOptionalNode(None)
+
     destr_expr %= loc + destr + expr , lambda h,s: DestrExprNode(s[1],s[3])
 
     while_expr %=  while_ + opar + expr + cpar + expr_body , lambda h,s: WhileExprNode(s[3],s[5])
@@ -124,7 +134,7 @@ def HulkGrammar():
 
     decl %= id_ + id_extend + asign + expr , lambda h,s: DeclNode(s[1],s[2],s[4])
 
-    decls %= decls + comma + decl , lambda h,s: s[1] + [s[3]]
+    decls %= decls + comma + let_optional+ decl , lambda h,s: s[1] + [s[3]] ############
     decls %= decl , lambda h,s: [s[1]]
 
     expr_body %= expr  , lambda h,s: ExprBodyNode(s[1])
