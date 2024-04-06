@@ -684,11 +684,11 @@ class FormatVisitor(object):
     
     @visitor.when(FactorNode)
     def visit(self, node, tabs=0):
-        ans = '\t' * tabs + f'\\__FactorNode <expr>'
-        expr = self.visit(node.expr, tabs + 1)
-        params_aux = self.visit(node.params_aux, tabs + 1)
-        expr2 = self.visit(node.expr2, tabs + 1)
-        return f'{ans}\n{expr}\n{params_aux}\n{expr2}'
+        ans = '\t' * tabs + f'\\__FactorNode'
+        expr = node.expr ############################
+        # params_aux = self.visit(node.params_aux, tabs + 1)
+        # expr2 = self.visit(node.expr2, tabs + 1)
+        return f'{ans}:{expr}'
     
     @visitor.when(LocNode)
     def visit(self, node, tabs=0):
@@ -831,10 +831,10 @@ class SemanticCheckerVisitor(object):
 
     @visitor.when(FunctionStatNode)
     def visit(self, node, scope):
-        if not scope.define_function(node.id_, node.params):
+        if not scope.define_function(node.id_, node.params.params_aux):###########
             self.errors.append(f'Function {node.id} is already defined in current scope.')
         inner_scope = scope.create_child_scope()
-        for param in node.params:
+        for param in node.params.params_aux:
             if not inner_scope.define_variable(param):
                 self.errors.append(f'Function {node.id_} is invalid, its arguments have to be different from each other.')
         self.visit(node.body, inner_scope)
@@ -899,8 +899,7 @@ class SemanticCheckerVisitor(object):
 
     @visitor.when(BodyNode)
     def visit(self, node, scope):
-        for exp in node.exprs:
-            self.visit(exp, scope)
+        self.visit(node.expr, scope)
 
     @visitor.when(ParamsNode)
     def visit(self, node, scope):
@@ -953,10 +952,14 @@ class SemanticCheckerVisitor(object):
     @visitor.when(WhileExprNode)
     def visit(self, node, scope):
         #generame un if de si node.expr es una instancia de LogicConcatExprNode o un CompExprNode
-        if node.expr.__class__.__name__ == 'LogicConcatExprNode' or node.expr.__class__.__name__ == 'CompExprNode':
-            self.visit(node.expr, scope)
-        else:
+        try:
+            if (node.expr.expr_elem.as_expr.logic_concat_expr.__class__.__name__ == 'LogicConcatExprNode' or node.expr.expr_elem.as_expr.logic_concat_expr.__class__.__name__ == 'CompExprNode') and node.expr.expr_elem.as_expr.logic_concat_expr.comp_expr.aritm_expr==None:
+                self.visit(node.expr, scope)
+            else:
+                self.errors.append(f'While condition must be a boolean expression.')
+        except:
             self.errors.append(f'While condition must be a boolean expression.')
+
         inner_scope = scope.create_child_scope()
         self.visit(node.expr_body, inner_scope)
 
@@ -968,9 +971,13 @@ class SemanticCheckerVisitor(object):
     @visitor.when(IfExprNode)
     def visit(self, node, scope):
         #generame un if de si node.expr es una instancia de LogicConcatExprNode o un CompExprNode
-        if node.expr.__class__.__name__ == 'LogicConcatExprNode' or node.expr.__class__.__name__ == 'CompExprNode':
-            self.visit(node.expr, scope)
-        else:
+        try:
+            if (node.expr.expr_elem.as_expr.logic_concat_expr.__class__.__name__ == 'LogicConcatExprNode' or node.expr.expr_elem.as_expr.logic_concat_expr.__class__.__name__ == 'CompExprNode') and node.expr.expr_elem.as_expr.logic_concat_expr.comp_expr.aritm_expr==None :
+                
+                self.visit(node.expr, scope)
+            else:
+                self.errors.append(f'If condition must be a boolean expression.')
+        except:
             self.errors.append(f'If condition must be a boolean expression.')
         inner_scope = scope.create_child_scope()
         self.visit(node.expr_body, inner_scope)
@@ -979,10 +986,13 @@ class SemanticCheckerVisitor(object):
     @visitor.when(ElifExprNode)#######
     def visit(self, node, scope):
         if node.expr is not None:
-            #generame un if de si node.expr es una instancia de LogicConcatExprNode o un CompExprNode
-            if node.expr.__class__.__name__ == 'LogicConcatExprNode' or node.expr.__class__.__name__ == 'CompExprNode':
-                self.visit(node.expr, scope)
-            else:
+            try:
+                #generame un if de si node.expr es una instancia de LogicConcatExprNode o un CompExprNode
+                if (node.expr.expr_elem.as_expr.logic_concat_expr.__class__.__name__ == 'LogicConcatExprNode' or node.expr.expr_elem.as_expr.logic_concat_expr.__class__.__name__ == 'CompExprNode') and node.expr.expr_elem.as_expr.logic_concat_expr.comp_expr.aritm_expr==None:
+                    self.visit(node.expr, scope)
+                else:
+                    self.errors.append(f'Elif condition must be a boolean expression.')
+            except:
                 self.errors.append(f'Elif condition must be a boolean expression.')
             inner_scope = scope.create_child_scope()
             self.visit(node.expr_body, inner_scope)
@@ -995,8 +1005,8 @@ class SemanticCheckerVisitor(object):
 
     @visitor.when(DeclNode)
     def visit(self, node, scope):
-        if not scope.define_variable(node.id_):
-            self.errors.append(f'Variable {node.id_} is already defined in current scope.')
+        # if not scope.define_variable(node.id_):
+        #     self.errors.append(f'Variable {node.id_} is already defined in current scope.')
         if scope.is_var_defined(node.id_extend.id_):
             self.errors.append(f'Variable {node.id_extend.id_} is not defined in current scope.')
         self.visit(node.expr, scope)
@@ -1067,8 +1077,8 @@ class SemanticCheckerVisitor(object):
 
     @visitor.when(LocNode)
     def visit(self, node, scope):
-        if not scope.is_var_defined(node.id_):
-            self.errors.append(f'Variable {node.id_} is not defined in current scope.')
+        # if not scope.is_var_defined(node.id_):
+        #     self.errors.append(f'Variable {node.id_} is not defined in current scope.')
         self.visit(node.args_in_par, scope)
     
     @visitor.when(ArgsNode)

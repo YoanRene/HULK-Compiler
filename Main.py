@@ -26,7 +26,11 @@ def init():
     'print(let b = 6 in b * 7);','let a = 20 in {let a = 42 in print(a);print(a);};','let a = 7, a = 7 * 6 in print(a);',
     'let a = 7 in let a = 7 * 6 in print(a);','let a = 0 in {print(a);a := 1;print(a);};',
     'let a = 0 in let b = a := 1 in {print(a);print(b);};',
-    'let a = 42 in if (a % 2 == 0) print("Even") else print("odd");'
+    'let a = 42 in if (a % 2 == 0) print("Even") else print("odd");',
+    'while(5){print("hola");};',
+    'while(x==1){print("hola");};',
+    'if(5){print("hola");}else{print("la");};',
+    'if(x==1){print("hola");}else{print("la");};'
     ]
 
     parserslist = []
@@ -64,10 +68,13 @@ def init():
 
     scope = Scope()
 
-    semantic_checker = SemanticCheckerVisitor()
-    errors = semantic_checker.visit(ast)
-    for i, error in enumerate(errors,1):
-        print(f'{i}.', error)
+    for i in range(len(astlist)):
+
+        semantic_checker = SemanticCheckerVisitor()
+        errors = semantic_checker.visit(astlist[i])
+        for j, error in enumerate(errors,1):
+            print(texts[i])
+            print(f'{j}.', error)
 
     #endregion
     

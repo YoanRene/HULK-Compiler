@@ -80,8 +80,8 @@ def HulkGrammar():
     body %= arrow + expr + semi , lambda h,s: BodyNode(s[2])
     body %= okey + expr_list_semi + ckey , lambda h,s: BodyNode(s[2])
 
-    params_aux %= id_ + id_extend  , lambda h,s: ParamsAuxNode(None,s[1],s[2])
-    params_aux %= params_aux + comma + id_ + id_extend, lambda h,s:[ParamsAuxNode(s[1],s[3],s[4])]
+    params_aux %= id_ + id_extend  , lambda h,s: [ParamsAuxNode(None,s[1],s[2])]
+    params_aux %= params_aux + comma + id_ + id_extend, lambda h,s:s[1]+[ParamsAuxNode(s[1],s[3],s[4])]
 
     params %= params_aux , lambda h,s: ParamsNode(s[1])
     params %= G.Epsilon , lambda h,s: ParamsNode(None)
@@ -116,7 +116,7 @@ def HulkGrammar():
     if_expr %= if_ + opar + expr + cpar + expr_body + elif_expr , lambda h,s: IfExprNode(s[3],s[5],s[6])
 
     elif_expr %= elif_ + opar + expr + cpar + expr_body + elif_expr , lambda h,s: ElifExprNode(s[3],s[5],s[6])
-    elif_expr %= else_expr , lambda h,s: s[1]
+    elif_expr %= else_expr , lambda h,s: s[1] #########################3
 
     else_expr %= else_ + expr_body , lambda h,s: ElseExprNode(s[2])
 
@@ -171,7 +171,7 @@ def HulkGrammar():
     negative %= minus + factor , lambda h,s: NegativeNode(s[2])
     negative %= factor , lambda h,s: NegativeNode(s[1])
 
-    factor %= opar + expr + cpar , lambda h,s: FactorNode(s[2],None,None)###########Ya factores lo de ponerlo en 1 mas
+    factor %= opar + expr + cpar , lambda h,s: FactorNode(s[2],None,None)
     factor %= num , lambda h,s: FactorNode(s[1],None,None)
     factor %= string , lambda h,s: FactorNode(s[1],None,None)
     factor %= sqrt + opar + expr + cpar , lambda h,s: FactorNode(s[3],None,None)
