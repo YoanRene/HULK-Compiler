@@ -154,26 +154,26 @@ def HulkGrammar():
 
     logic_concat_expr %= logic_concat_expr + arroba + comp_expr , lambda h,s: LogicConcatExprNode(s[1],s[3])
     logic_concat_expr %= logic_concat_expr + double_arroba + comp_expr , lambda h,s: LogicConcatExprNode(s[1],s[3])
-    logic_concat_expr %= logic_concat_expr + and_ + comp_expr , lambda h,s: LogicConcatExprNode(s[1],s[3])
-    logic_concat_expr %= logic_concat_expr + or_ + comp_expr , lambda h,s: LogicConcatExprNode(s[1],s[3])
-    logic_concat_expr %= not_ + comp_expr , lambda h,s: LogicConcatExprNode(s[2],None)
+    logic_concat_expr %= logic_concat_expr + and_ + comp_expr , lambda h,s: AndNode(s[1],s[3])
+    logic_concat_expr %= logic_concat_expr + or_ + comp_expr , lambda h,s: OrNode(s[1],s[3])
+    logic_concat_expr %= not_ + comp_expr , lambda h,s: NotNode(s[2],None)
     logic_concat_expr %= comp_expr , lambda h,s: LogicConcatExprNode(s[1],None)
 
-    comp_expr %= comp_expr + equals + aritm_expr , lambda h,s: CompExprNode(s[1],s[3])
-    comp_expr %= comp_expr + not_equals + aritm_expr , lambda h,s: CompExprNode(s[1],s[3])
-    comp_expr %= comp_expr + greater + aritm_expr , lambda h,s: CompExprNode(s[1],s[3])
-    comp_expr %= comp_expr + greater_equals + aritm_expr , lambda h,s: CompExprNode(s[1],s[3])
-    comp_expr %= comp_expr + less + aritm_expr , lambda h,s: CompExprNode(s[1],s[3])
-    comp_expr %= comp_expr + less_equals + aritm_expr , lambda h,s: CompExprNode(s[1],s[3])
+    comp_expr %= comp_expr + equals + aritm_expr , lambda h,s: EqualsNode(s[1],s[3])
+    comp_expr %= comp_expr + not_equals + aritm_expr , lambda h,s: NotEqualsNode(s[1],s[3])
+    comp_expr %= comp_expr + greater + aritm_expr , lambda h,s: GreaterNode(s[1],s[3])
+    comp_expr %= comp_expr + greater_equals + aritm_expr , lambda h,s: GreaterEqualsNode(s[1],s[3])
+    comp_expr %= comp_expr + less + aritm_expr , lambda h,s: LessNode(s[1],s[3])
+    comp_expr %= comp_expr + less_equals + aritm_expr , lambda h,s: LessEqualsNode(s[1],s[3])
     comp_expr %= aritm_expr , lambda h,s: CompExprNode(s[1],None)
 
-    aritm_expr %= aritm_expr + plus + term , lambda h,s: AritmExprNode(s[1],s[3]) ##seria sum node
-    aritm_expr %= aritm_expr + minus + term , lambda h,s: AritmExprNode(s[1],s[3]) ##
+    aritm_expr %= aritm_expr + plus + term , lambda h,s: SumNode(s[1],s[3]) ##seria sum node
+    aritm_expr %= aritm_expr + minus + term , lambda h,s: MinusNode(s[1],s[3]) ##
     aritm_expr %= term , lambda h,s: AritmExprNode(s[1],None) ##
 
-    term %= term + star + pow_expr , lambda h,s: TermNode(s[1],s[3]) ##
-    term %= term + div + pow_expr , lambda h,s: TermNode(s[1],s[3]) ##
-    term %= term + mod + pow_expr , lambda h,s: TermNode(s[1],s[3]) ##
+    term %= term + star + pow_expr , lambda h,s: MultNode(s[1],s[3]) ##
+    term %= term + div + pow_expr , lambda h,s: DivNode(s[1],s[3]) ##
+    term %= term + mod + pow_expr , lambda h,s: ModNode(s[1],s[3]) ##
     term %= pow_expr , lambda h,s: TermNode(s[1],None) ##
 
     pow_expr %= pow_expr + pow_ + negative , lambda h,s: PowExprNode(s[1],s[3]) ##
@@ -184,16 +184,16 @@ def HulkGrammar():
     negative %= factor , lambda h,s: NegativeNode(s[1])
 
     factor %= opar + expr + cpar , lambda h,s: FactorNode(s[2],None,None)
-    factor %= num , lambda h,s: NumNode(s[1])
+    factor %= num , lambda h,s: NumNode(s[1],None)
     factor %= string , lambda h,s: StrNode(s[1])
-    factor %= sqrt + opar + expr + cpar , lambda h,s: FactorNode(s[3],None,None)
-    factor %= sin + opar + expr + cpar , lambda h,s: FactorNode(s[3],None,None)
-    factor %= cos + opar + expr + cpar , lambda h,s: FactorNode(s[3],None,None)
-    factor %= exp + opar + expr + cpar , lambda h,s: FactorNode(s[3],None,None)
-    factor %= log + opar + expr + comma + expr + cpar , lambda h,s: FactorNode(s[3],s[5],None)
-    factor %= rand + opar + cpar , lambda h,s: FactorNode(None,None,None)
-    factor %= e , lambda h,s: NumNode(math.e)
-    factor %= pi , lambda h,s: NumNode(math.pi)
+    factor %= sqrt + opar + expr + cpar , lambda h,s: NumNode(s[3],None)
+    factor %= sin + opar + expr + cpar , lambda h,s: NumNode(s[3],None)
+    factor %= cos + opar + expr + cpar , lambda h,s: NumNode(s[3],None)
+    factor %= exp + opar + expr + cpar , lambda h,s: NumNode(s[3],None)
+    factor %= log + opar + expr + comma + expr + cpar , lambda h,s:NumNode(s[3],s[5])
+    factor %= rand + opar + cpar , lambda h,s: NumNode(None,None)
+    factor %= e , lambda h,s: NumNode(math.e , None)
+    factor %= pi , lambda h,s: NumNode(math.pi , None)
     factor %= loc , lambda h,s: FactorNode(s[1],None,None)
     factor %= oindex + args + cindex  , lambda h,s: FactorNode(s[2],None,None)
     factor %= oindex + expr + that + params_aux + in_ + expr + cindex , lambda h,s: FactorNode(s[2],s[4],s[6]) 

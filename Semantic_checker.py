@@ -48,6 +48,86 @@ class ProgramNode:
         # Implementación de la evaluación del programa
         pass
 
+class SumNode:
+    def __init__(self,aritm_expr,term):
+        self.aritm_expr=aritm_expr
+        self.term=term
+        self.ret_type = "num"
+    
+    def evaluate(self):
+        pass
+
+class MinusNode:
+    def __init__(self,aritm_expr,term):
+        self.aritm_expr=aritm_expr
+        self.term=term
+        self.ret_type = "num"
+    
+    def evaluate(self):
+        pass
+
+class MultNode:
+    def __init__(self,term,pow_expr):
+        self.term=term
+        self.pow_expr=pow_expr
+        self.ret_type = "num"
+    
+    def evaluate(self):
+        pass
+
+class DivNode:
+    def __init__(self,term,pow_expr):
+        self.term=term
+        self.pow_expr=pow_expr
+        self.ret_type = "num"
+    
+    def evaluate(self):
+        pass
+
+class ModNode:
+    def __init__(self,term,pow_expr):
+        self.term=term
+        self.pow_expr=pow_expr
+        self.ret_type = "num"
+    
+    def evaluate(self):
+        pass
+
+class MathNode:
+    def __init__(self,expr1,expr2):
+        self.expr1=expr1
+        self.expr2=expr2
+        self.ret_type = "num"
+    
+    def evaluate(self):
+        pass
+
+class AndNode:
+    def __init__(self,logic_concat_expr,comp_expr):
+        self.logic_concat_expr=logic_concat_expr
+        self.comp_expr=comp_expr
+        self.ret_type = "bool"
+    
+    def evaluate(self):
+        pass
+
+class OrNode:
+    def __init__(self,logic_concat_expr,comp_expr):
+        self.logic_concat_expr=logic_concat_expr
+        self.comp_expr=comp_expr
+        self.ret_type = "bool"
+    
+    def evaluate(self):
+        pass
+
+class NotNode:
+    def __init__(self,comp_expr):
+        self.comp_expr=comp_expr
+        self.ret_type = "bool"
+    
+    def evaluate(self):
+        pass
+
 class BlockExprListNode:
     def __init__(self, block_expr_list,expr):
         self.block_expr_list = block_expr_list
@@ -201,6 +281,7 @@ class PrintExprNode:
     def __init__(self, print_, expr):
         self.print_ = print_
         self.expr = expr
+        self.ret_type = "str"
 
     def evaluate(self):
         # Implementación de la evaluación de la expresión de impresión
@@ -210,6 +291,7 @@ class LetExprNode:
     def __init__(self, decls,expr_body):
         self.decls = decls
         self.expr_body = expr_body
+        self.ret_type = "let"
 
     def evaluate(self):
         # Implementación de la evaluación de la expresión de declaración
@@ -319,6 +401,10 @@ class ExprElemNode:
     def __init__(self, expr_elem, as_expr):
         self.expr_elem = expr_elem
         self.as_expr = as_expr
+        try: 
+            self.ret_type = as_expr.ret_type
+        except:
+            self.ret_type = expr_elem.ret_type
 
     def evaluate(self):
         # Implementación de la evaluación del elemento de expresión
@@ -328,6 +414,10 @@ class AsExprNode:
     def __init__(self, as_expr, logic_concat_expr):
         self.as_expr = as_expr
         self.logic_concat_expr = logic_concat_expr
+        try:
+            self.ret_type = logic_concat_expr.ret_type
+        except:
+            self.ret_type = as_expr.ret_type
 
     def evaluate(self):
         # Implementación de la evaluación de la expresión de conversión de tipo
@@ -337,6 +427,10 @@ class LogicConcatExprNode:
     def __init__(self, logic_concat_expr, comp_expr):
         self.logic_concat_expr = logic_concat_expr
         self.comp_expr = comp_expr
+        try:
+            self.ret_type = comp_expr.ret_type
+        except:
+            self.ret_type = logic_concat_expr.ret_type
 
     def evaluate(self):
         # Implementación de la evaluación de la expresión de concatenación lógica
@@ -346,15 +440,76 @@ class CompExprNode:
     def __init__(self, comp_expr, aritm_expr):
         self.comp_expr = comp_expr
         self.aritm_expr = aritm_expr
+        try:
+            self.ret_type = aritm_expr.ret_type ###################
+        except:
+            self.ret_type = comp_expr.ret_type
 
     def evaluate(self):
         # Implementación de la evaluación de la expresión de comparación
+        pass
+
+class EqualsNode:
+    def __init__(self, comp_expr, aritm_expr):
+        self.comp_expr = comp_expr
+        self.aritm_expr = aritm_expr
+        self.ret_type = "bool"
+
+class NotEqualsNode:
+    def __init__(self, comp_expr, aritm_expr):
+        self.comp_expr = comp_expr
+        self.aritm_expr = aritm_expr
+        self.ret_type = "bool"
+
+    def evaluate(self):
+        # Implementación de la evaluación de la expresión de igualdad
+        pass
+
+class LessNode:
+    def __init__(self, comp_expr, aritm_expr):
+        self.comp_expr = comp_expr
+        self.aritm_expr = aritm_expr
+        self.ret_type = "bool"
+
+    def evaluate(self):
+        # Implementación de la evaluación de la expresión de menor que
+        pass
+
+class GreaterNode:
+    def __init__(self, comp_expr, aritm_expr):
+        self.comp_expr = comp_expr
+        self.aritm_expr = aritm_expr
+        self.ret_type = "bool"
+
+    def evaluate(self):
+        # Implementación de la evaluación de la expresión de mayor que
+        pass
+
+class LessEqualsNode:
+    def __init__(self, comp_expr, aritm_expr):
+        self.comp_expr = comp_expr
+        self.aritm_expr = aritm_expr
+        self.ret_type = "bool"
+
+    def evaluate(self):
+        # Implementación de la evaluación de la expresión de menor o igual que
+        pass
+
+class GreaterEqualsNode:
+    def __init__(self, comp_expr, aritm_expr):
+        self.comp_expr = comp_expr
+        self.aritm_expr = aritm_expr
+        self.ret_type = "bool"
+
+    def evaluate(self):
+        # Implementación de la evaluación de la expresión de mayor o igual que
         pass
 
 class AritmExprNode:
     def __init__(self, aritm_expr, term):
         self.aritm_expr = aritm_expr
         self.term = term
+        self.ret_type = aritm_expr.ret_type #####################
 
     def evaluate(self):
         # Implementación de la evaluación de la expresión aritmética
@@ -364,6 +519,10 @@ class TermNode:
     def __init__(self, term, pow_expr):
         self.term = term
         self.pow_expr = pow_expr
+        try:
+            self.ret_type = pow_expr.ret_type
+        except:
+            self.ret_type = term.ret_type
 
     def evaluate(self):
         # Implementación de la evaluación del término aritmético
@@ -373,6 +532,10 @@ class PowExprNode:
     def __init__(self, pow_expr, negative):
         self.pow_expr = pow_expr
         self.negative = negative
+        try: 
+            self.ret_type = negative.ret_type
+        except:
+            self.ret_type = pow_expr.ret_type
 
     def evaluate(self):
         # Implementación de la evaluación de la expresión de potencia
@@ -381,6 +544,7 @@ class PowExprNode:
 class NegativeNode:
     def __init__(self, factor):
         self.factor = factor
+        self.ret_type = factor.ret_type
 
     def evaluate(self):
         # Implementación de la evaluación de la expresión negativa
@@ -391,6 +555,7 @@ class FactorNode:
         self.expr = expr
         self.params_aux = params_aux
         self.expr2 = expr2
+        self.ret_type = expr.ret_type
 
     def evaluate(self):
         # Implementación de la evaluación del factor de expresión
@@ -401,6 +566,7 @@ class LocNode:
         self.loc = loc
         self.id_ = id_
         self.args_in_par = args_in_par
+        self.ret_type = "str"
 
     def evaluate(self):
         # Implementación de la evaluación de la ubicación
@@ -432,8 +598,11 @@ class ArgsInParNode:
         pass
 
 class NumNode: 
-    def __init__(self, value):
+    def __init__(self, value,value2):
         self.value= value
+        self.value2= value2
+        self.ret_type = "num"
+
 
     def evaluate(self):
         # Implementación de la evaluación del número
@@ -442,6 +611,7 @@ class NumNode:
 class BoolNode:
     def __init__(self, value):
         self.value= value
+        self.ret_type = "bool"
 
     def evaluate(self):
         # Implementación de la evaluación del booleano
@@ -450,6 +620,7 @@ class BoolNode:
 class StrNode:
     def __init__(self, value):
         self.value= value
+        self.ret_type = "str"
 
     def evaluate(self):
         # Implementación de la evaluación de la cadena de texto
@@ -467,6 +638,41 @@ class FormatVisitor(object):
         ans = '\t' * tabs + f'\\__ProgramNode [<stat>; ... <stat>;]'
         expr = self.visit(node.expr, tabs + 1)
         return f'{ans}\n{expr}'
+    
+    @visitor.when(SumNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__SumNode <expr> + <expr>'
+        left = self.visit(node.aritm_expr, tabs + 1)
+        right = self.visit(node.term, tabs + 1)
+        return f'{ans}\n{left}\n{right}'
+    
+    @visitor.when(MinusNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__MinusNode <expr> - <expr>'
+        left = self.visit(node.aritm_expr, tabs + 1)
+        right = self.visit(node.term, tabs + 1)
+        return f'{ans}\n{left}\n{right}'
+    
+    @visitor.when(MultNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__MultNode <expr> * <expr>'
+        left = self.visit(node.term, tabs + 1)
+        right = self.visit(node.pow_expr, tabs + 1)
+        return f'{ans}\n{left}\n{right}'
+    
+    @visitor.when(DivNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__DivNode <expr> / <expr>'
+        left = self.visit(node.term, tabs + 1)
+        right = self.visit(node.pow_expr, tabs + 1)
+        return f'{ans}\n{left}\n{right}'
+    
+    @visitor.when(ModNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ModNode <expr> % <expr>'
+        left = self.visit(node.term, tabs + 1)
+        right = self.visit(node.pow_expr, tabs + 1)
+        return f'{ans}\n{left}\n{right}'
     
     @visitor.when(PrintExprNode)
     def visit(self, node, tabs=0):
@@ -1005,7 +1211,7 @@ class SemanticCheckerVisitor(object):
     def visit(self, node, scope):
         #generame un if de si node.expr es una instancia de LogicConcatExprNode o un CompExprNode
         try:
-            if (node.expr.expr_elem.as_expr.logic_concat_expr.__class__.__name__ == 'LogicConcatExprNode' or node.expr.expr_elem.as_expr.logic_concat_expr.__class__.__name__ == 'CompExprNode') and node.expr.expr_elem.as_expr.logic_concat_expr.comp_expr.aritm_expr==None:
+            if (node.expr.ret_type == "bool"):
                 self.visit(node.expr, scope)
             else:
                 self.errors.append(f'While condition must be a boolean expression.')
@@ -1024,7 +1230,7 @@ class SemanticCheckerVisitor(object):
     def visit(self, node, scope):
         #generame un if de si node.expr es una instancia de LogicConcatExprNode o un CompExprNode
         try:
-            if (node.expr.expr_elem.as_expr.logic_concat_expr.__class__.__name__ == 'LogicConcatExprNode' or node.expr.expr_elem.as_expr.logic_concat_expr.__class__.__name__ == 'CompExprNode') and node.expr.expr_elem.as_expr.logic_concat_expr.comp_expr.aritm_expr==None :
+            if (node.expr.ret_type == "bool"):
                 
                 self.visit(node.expr, scope)
             else:
@@ -1040,7 +1246,7 @@ class SemanticCheckerVisitor(object):
         if node.expr is not None:
             try:
                 #generame un if de si node.expr es una instancia de LogicConcatExprNode o un CompExprNode
-                if (node.expr.expr_elem.as_expr.logic_concat_expr.__class__.__name__ == 'LogicConcatExprNode' or node.expr.expr_elem.as_expr.logic_concat_expr.__class__.__name__ == 'CompExprNode') and node.expr.expr_elem.as_expr.logic_concat_expr.comp_expr.aritm_expr==None:
+                if (node.expr.ret_type == "bool"):
                     self.visit(node.expr, scope)
                 else:
                     self.errors.append(f'Elif condition must be a boolean expression.')
@@ -1103,10 +1309,84 @@ class SemanticCheckerVisitor(object):
         self.visit(node.comp_expr, scope)
         self.visit(node.aritm_expr, scope)
 
+    @visitor.when(AndNode)
+    def visit(self, node, scope):
+        self.visit(node.logic_concat_expr, scope)
+        self.visit(node.comp_expr, scope)
+
+    @visitor.when(OrNode)
+    def visit(self, node, scope):
+        self.visit(node.logic_concat_expr, scope)
+        self.visit(node.comp_expr, scope)
+
+    @visitor.when(NotNode)
+    def visit(self, node, scope):
+        self.visit(node.logic_concat_expr, scope)
+        self.visit(node.comp_expr, scope)
+
     @visitor.when(AritmExprNode)
     def visit(self, node, scope):
+        # if(not(recursivity(node.aritm_expr)== recursivity(node.term))):
+        #     self.errors.append(f'Incompatible types in arithmetical expression.')
         self.visit(node.aritm_expr, scope)
         self.visit(node.term, scope)
+
+
+    @visitor.when(SumNode)
+    def visit(self, node, scope):
+        #type_1 = findType(node.aritm_expr)
+        #type_2 = findType(node.term)
+        type_1 = node.aritm_expr.ret_type
+        type_2 = node.term.ret_type
+        if(not(type_1 == type_2) and type_1 != 'str' and type_2 != 'str'):
+            self.errors.append(f'Incompatible types in arithmetical expression.')
+        self.visit(node.aritm_expr, scope)
+        self.visit(node.term, scope)
+
+    @visitor.when(MinusNode)
+    def visit(self, node, scope):
+        #type_1 = findType(node.aritm_expr)
+        #type_2 = findType(node.term)
+        type_1 = node.aritm_expr.ret_type
+        type_2 = node.term.ret_type
+        if(not(type_1 == type_2) and type_1 != 'str' and type_2 != 'str'):
+            self.errors.append(f'Incompatible types in arithmetical expression.')
+        self.visit(node.aritm_expr, scope)
+        self.visit(node.term, scope)
+
+    @visitor.when(DivNode)
+    def visit(self, node, scope):
+        #type_1 = findType(node.pow_expr)
+        #type_2 = findType(node.term)
+        type_1 = node.pow_expr.ret_type
+        type_2 = node.term.ret_type
+        if(not(type_1 == type_2) and type_1 != 'str' and type_2 != 'str'):
+            self.errors.append(f'Incompatible types in arithmetical expression.')
+        self.visit(node.pow_expr, scope)
+        self.visit(node.term, scope)
+
+    @visitor.when(MultNode)
+    def visit(self, node, scope):
+        #type_1 = findType(node.pow_expr)
+        #type_2 = findType(node.term)
+        type_1 = node.pow_expr.ret_type
+        type_2 = node.term.ret_type
+        if(not(type_1 == type_2) and type_1 != 'str' and type_2 != 'str'):
+            self.errors.append(f'Incompatible types in arithmetical expression.')
+        self.visit(node.pow_expr, scope)
+        self.visit(node.term, scope)
+    
+    @visitor.when(ModNode)
+    def visit(self, node, scope):
+        #type_1 = findType(node.aritm_expr)
+        #type_2 = findType(node.term)
+        type_1 = node.pow_expr.ret_type
+        type_2 = node.term.ret_type
+        if(not(type_1 == type_2) and type_1 != 'str' and type_2 != 'str'):
+            self.errors.append(f'Incompatible types in arithmetical expression.')
+        self.visit(node.aritm_expr, scope)
+        self.visit(node.term, scope)
+    
 
     @visitor.when(TermNode)
     def visit(self, node, scope):
@@ -1218,3 +1498,86 @@ class SemanticCheckerVisitor(object):
     # def visit(self, node, scope):
     #     self.visit(node.left,scope)
     #     self.visit(node.right,scope)
+
+
+
+
+def findType(node):
+
+    try:
+        return findType(node.expr_elem)
+    except:
+        pass
+
+    try:
+        return findType(node.as_expr)
+    except:
+        pass
+
+    try:
+        return findType(node.logic_concat_expr)
+    except:
+        pass
+
+    try:
+        return findType(node.comp_expr)
+    except:
+        pass
+
+    try:
+        return findType(node.aritm_expr)
+    except:
+        pass
+
+    try:
+        return findType(node.term)
+    except:
+        pass
+
+    try:
+        return findType(node.pow_expr)
+    except:
+        pass
+
+    try:
+        return findType(node.negative)
+    except:
+        pass
+
+    try:
+        return findType(node.factor)
+    except:
+        pass
+
+    try:
+        return findType(node.loc)####
+    except:
+        pass
+
+    try:
+        return findType(node.expr)
+    except:
+        pass
+
+    return node.__class__.__name__
+
+    # try:
+    #     if node.term.pow_expr.factor.__class__.__name__== "NumNode" or node.term.pow_expr.factor.__class__.__name__== "MathNode":
+    #         return "num"
+    # except:
+    #     pass
+    # try :
+    #     if node.pow_expr.factor.__class__.__name__== "NumNode" or node.pow_expr.factor.__class__.__name__== "MathNode":
+    #         return "num"
+    # except:
+    #     pass
+    # try:
+    #     if node.aritm_expr.term.pow_expr.factor.__class__.__name__== "NumNode" or node.aritm_expr.term.pow_expr.factor.__class__.__name__== "MathNode":
+    #         return "num"
+    # except:
+    #     pass
+    # try :
+    #     if node.aritm_expr.term.__class__.__name__== "MultNode" or node.aritm_expr.term.__class__.__name__== "DivNode"or node.aritm_expr.term.__class__.__name__== "ModNode":
+    #         return "num"
+    # except:
+    #     pass
