@@ -696,7 +696,10 @@ class FormatVisitor(object):
         ans = '\t' * tabs + f'\\__MinusNode <expr> - <expr>'
         left = self.visit(node.aritm_expr, tabs + 1)
         right = self.visit(node.term, tabs + 1)
-        return f'{ans}\n{left}\n{right}'
+        if(right !=[] and right!=None):
+            return f'{ans}\n{left}\n{right}'
+        else:
+            return f'{ans}\n{left}'
     
     @visitor.when(MultNode)
     def visit(self, node, tabs=0):
@@ -744,10 +747,20 @@ class FormatVisitor(object):
     @visitor.when(FunctionStatNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__FunctionStatNode <id> (<params>) : <type> <block>'
-        id = self.visit(node.id_, tabs + 1)
+        id = node.id_
         params = self.visit(node.params, tabs + 1)
         id_extend = self.visit(node.id_extend, tabs + 1)
         body = self.visit(node.body, tabs + 1)
+
+        if(id_extend !=[] and id_extend != None):
+            if id != None :
+                return f'{ans}\n{id}\n{params}\n{id_extend}\n{body}'
+            else:
+                return f'{ans}\n{params}\n{id_extend}\n{body}'
+        elif id != None:
+            return f'{ans}\n{id}\n{params}\n{body}'
+        else:
+            return f'{ans}\n{params}\n{body}'
 
     
     @visitor.when(TypeStatNode)
@@ -808,16 +821,25 @@ class FormatVisitor(object):
     
     @visitor.when(ParamsAuxNode)
     def visit(self, node, tabs=0):
-        ans = '\t' * tabs + f'\\__ParamsAuxNode <id> : <type>'
-        id = self.visit(node.id_, tabs + 1)
+        ans = '\t' * tabs + f'\\__ParamsAuxNode <id> :'
+        id = node.id_
         id_extend = self.visit(node.id_extend, tabs + 1)
-        return f'{ans}\n{id}\n{id_extend}'
+        if(id_extend != [] and id_extend != None):
+            return f'{ans}\n{id},{id_extend}'
+        else:
+            return f'{ans} {id}'
     
     @visitor.when(ParamsNode) #######################
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__ParamsNode <id> : <type>'
-        params_aux = self.visit(node.params_aux, tabs + 1)
-        return f'{ans}\n{params_aux}'
+        string=""
+        for param in node.params_aux:
+            x= self.visit(param, tabs + 1)
+            if x != []:
+                string += self.visit(param, tabs + 1)+","
+        if(string != ""):
+            params_aux = string[:-1]
+            return f'{ans}\n{params_aux}'
     
     @visitor.when(ParamsInParNode)
     def visit(self, node, tabs=0):
@@ -916,15 +938,20 @@ class FormatVisitor(object):
     @visitor.when(IdExtendNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__IdExtendNode <id> <id_extend>'
-        id = self.visit(node.id_, tabs + 1)
-        return f'{ans}\n{id}'
+        if (node.id_!=None):
+            return f'{ans}\n{node.id_}'
     
     @visitor.when(ExprElemNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__ExprElemNode <expr> <expr_elem>'
         expr_elem = self.visit(node.expr_elem, tabs + 1)
         as_expr = self.visit(node.as_expr, tabs + 1)
-        return f'{ans}\n{expr_elem}\n{as_expr}'
+        if(expr_elem != [] and expr_elem != None):
+            if(as_expr != [] and as_expr != None):
+                return f'{ans}\n{expr_elem}\n{as_expr}'
+            return f'{ans}\n{expr_elem}'
+        elif as_expr != [] and as_expr != None:
+            return f'{ans}\n{as_expr}'
     
     @visitor.when(AsExprNode)
     def visit(self, node, tabs=0):
@@ -932,56 +959,88 @@ class FormatVisitor(object):
         as_expr = self.visit(node.as_expr, tabs + 1)
         logic_concat_expr = self.visit(node.logic_concat_expr, tabs + 1)
 
-        return f'{ans}\n{as_expr}\n{logic_concat_expr}'
+        if(as_expr != [] and as_expr != None):
+            if (logic_concat_expr != [] and logic_concat_expr != None):
+                return f'{ans}\n{as_expr}\n{logic_concat_expr}'
+            return f'{ans}\n{as_expr}'
+        elif logic_concat_expr != [] and logic_concat_expr != None:
+            return f'{ans}\n{logic_concat_expr}'
     
     @visitor.when(LogicConcatExprNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__LogicConcatExprNode <expr> <logic_concat_expr>'
         logic_concat_expr = self.visit(node.logic_concat_expr, tabs + 1)
         comp_expr = self.visit(node.comp_expr, tabs + 1)
-        return f'{ans}\n{logic_concat_expr}\n{comp_expr}'
+        if(logic_concat_expr != [] and logic_concat_expr != None):
+            if (comp_expr != [] and comp_expr != None):
+                return f'{ans}\n{logic_concat_expr}\n{comp_expr}'
+            return f'{ans}\n{logic_concat_expr}'
+        elif comp_expr != [] and comp_expr != None:
+            return f'{ans}\n{comp_expr}'
     
     @visitor.when(CompExprNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__CompExprNode <expr> <comp_expr>'
         comp_expr = self.visit(node.comp_expr, tabs + 1)
         aritm_expr = self.visit(node.aritm_expr, tabs + 1)
-        return f'{ans}\n{comp_expr}\n{aritm_expr}'
+        if(comp_expr != [] and comp_expr != None):
+            if (aritm_expr != [] and aritm_expr != None):
+                return f'{ans}\n{comp_expr}\n{aritm_expr}'
+            return f'{ans}\n{comp_expr}'
+        elif aritm_expr != [] and aritm_expr != None:
+            return f'{ans}\n{aritm_expr}'
     
     @visitor.when(AritmExprNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__AritmExprNode <expr> <aritm_expr>'
         aritm_expr = self.visit(node.aritm_expr, tabs + 1)
         term = self.visit(node.term, tabs + 1)
-        return f'{ans}\n{aritm_expr}\n{term}'
+
+        if(aritm_expr != [] and aritm_expr != None):
+            if (term != [] and term != None):
+                return f'{ans}\n{aritm_expr}\n{term}'
+            return f'{ans}\n{aritm_expr}'
+        elif term != [] and term != None:
+            return f'{ans}\n{term}'
     
     @visitor.when(TermNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__TermNode <expr> <term>'
         term = self.visit(node.term, tabs + 1)
         pow_expr = self.visit(node.pow_expr, tabs + 1)
-        return f'{ans}\n{term}\n{pow_expr}'
+        if( pow_expr != [] and pow_expr != None):
+            if(term != [] and term != None):
+                return f'{ans}\n{term}\n{pow_expr}'
+            return f'{ans}\n{pow_expr}'
+        elif term != [] and term != None:
+            return f'{ans}\n{term}'
     
     @visitor.when(PowExprNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__PowExprNode <expr> <pow_expr>'
         pow_expr = self.visit(node.pow_expr, tabs + 1)
         negative = self.visit(node.negative, tabs + 1)
-        return f'{ans}\n{pow_expr}\n{negative}'
+        if(negative!=[] and negative!=None):
+            return f'{ans}\n{pow_expr}\n{negative}'
+        elif pow_expr != [] and pow_expr != None:
+            return f'{ans}\n{pow_expr}'
     
     @visitor.when(NegativeNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__NegativeNode <expr>'
         factor = self.visit(node.factor, tabs + 1)
-        return f'{ans}\n{factor}'
+        if(factor != [] and factor != None):
+            return f'{ans}\n{factor}'
+        
     
     @visitor.when(FactorNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__FactorNode'
-        expr = node.expr ############################
+        expr = self.visit(node.expr, tabs + 1)
         # params_aux = self.visit(node.params_aux, tabs + 1)
         # expr2 = self.visit(node.expr2, tabs + 1)
-        return f'{ans}:{expr}'
+        if(expr != [] and expr != None):
+            return f'{ans}\n{expr}'
     
     @visitor.when(LocNode)
     def visit(self, node, tabs=0):
@@ -989,14 +1048,29 @@ class FormatVisitor(object):
         loc = self.visit(node.loc, tabs + 1)
         id= self.visit(node.id_, tabs + 1)
         args_in_par = self.visit(node.args_in_par, tabs + 1)
-        return f'{ans}\n{loc}\n{id}\n{args_in_par}'
+        if loc != []:
+            if id != []:
+                if args_in_par != []:
+                    return f'{ans}\n{loc}\n{id}\n{args_in_par}'
+                else:
+                    return f'{ans}\n{loc}\n{args_in_par}'
+            return f'{ans}\n{loc}'
+        elif id != []:
+            if args_in_par != []:
+                return f'{ans}\n{id}\n{args_in_par}'
+            return f'{ans}\n{args_in_par}'
+        elif args_in_par != [] and args_in_par != None:
+            return f'{ans}\n{args_in_par}'
     
     @visitor.when(ArgsAuxNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__ArgsAuxNode <expr> <args_aux>'
         args_aux = self.visit(node.args_aux, tabs + 1)
         expr = self.visit(node.expr, tabs + 1)
-        return f'{ans}\n{args_aux}\n{expr}'
+        if(expr != []):
+            return f'{ans}\n{args_aux}\n{expr}'
+        else:
+            return f'{ans}\n{args_aux}'
     
     @visitor.when(ArgsNode)
     def visit(self, node, tabs=0):
@@ -1009,10 +1083,16 @@ class FormatVisitor(object):
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__ArgsInParNode <expr>'
         args = self.visit(node.args, tabs + 1)
-        return f'{ans}\n{args}'
+        if(args != []):
+            return f'{ans}\n{args}'
     
     @visitor.when(NumNode)
     def visit(self, node, tabs=0):
+        if(node.math_func != None):
+            value=self.visit(node.value, tabs + 1)
+            if value != [] and value != None:
+                return '\t' * tabs + f'\\__NumNode: {node.math_func} {value}'
+            return '\t' * tabs + f'\\__NumNode: {node.math_func}'
         return '\t' * tabs + f'\\__NumNode: {node.value}'
     
     @visitor.when(BoolNode)
