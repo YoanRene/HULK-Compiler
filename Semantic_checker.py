@@ -1,3 +1,5 @@
+import math
+import random
 from Automata import *
 from Grammar import *
 from Parser import *
@@ -44,9 +46,15 @@ class ProgramNode:
         self.program = program
         self.expr = expr
 
-    def evaluate(self):
-        # Implementación de la evaluación del programa
-        pass
+    # def evaluate(self):
+    #     try :
+    #         return self.program.evaluate()
+    #     except:
+    #         pass
+    #     try :
+    #         return self.expr.evaluate()
+    #     except:
+    #         pass
 
 class SumNode:
     def __init__(self,aritm_expr,term):
@@ -54,8 +62,8 @@ class SumNode:
         self.term=term
         self.ret_type = "num"
     
-    def evaluate(self):
-        pass
+    # def evaluate(self):
+    #     return self.aritm_expr.evaluate() + self.term.evaluate()
 
 class MinusNode:
     def __init__(self,aritm_expr,term):
@@ -64,7 +72,7 @@ class MinusNode:
         self.ret_type = "num"
     
     def evaluate(self):
-        pass
+        return self.aritm_expr.evaluate() - self.term.evaluate()
 
 class MultNode:
     def __init__(self,term,pow_expr):
@@ -73,7 +81,7 @@ class MultNode:
         self.ret_type = "num"
     
     def evaluate(self):
-        pass
+        return self.term.evaluate() * self.pow_expr.evaluate()
 
 class DivNode:
     def __init__(self,term,pow_expr):
@@ -82,7 +90,7 @@ class DivNode:
         self.ret_type = "num"
     
     def evaluate(self):
-        pass
+        return self.term.evaluate() / self.pow_expr.evaluate()
 
 class ModNode:
     def __init__(self,term,pow_expr):
@@ -91,7 +99,7 @@ class ModNode:
         self.ret_type = "num"
     
     def evaluate(self):
-        pass
+        return self.term.evaluate() % self.pow_expr.evaluate()
 
 class MathNode:
     def __init__(self,expr1,expr2):
@@ -109,7 +117,7 @@ class AndNode:
         self.ret_type = "bool"
     
     def evaluate(self):
-        pass
+        return self.logic_concat_expr.evaluate() and self.comp_expr.evaluate()
 
 class OrNode:
     def __init__(self,logic_concat_expr,comp_expr):
@@ -118,7 +126,7 @@ class OrNode:
         self.ret_type = "bool"
     
     def evaluate(self):
-        pass
+        return self.logic_concat_expr.evaluate() or self.comp_expr.evaluate()
 
 class NotNode:
     def __init__(self,comp_expr):
@@ -126,7 +134,7 @@ class NotNode:
         self.ret_type = "bool"
     
     def evaluate(self):
-        pass
+        return not self.comp_expr.evaluate()
 
 class BlockExprListNode:
     def __init__(self, block_expr_list,expr):
@@ -398,13 +406,18 @@ class IdExtendNode:
         pass
 
 class ExprElemNode:
-    def __init__(self, expr_elem, as_expr):
+    def __init__(self, expr_elem, as_expr, is_expr):
         self.expr_elem = expr_elem
         self.as_expr = as_expr
-        try: 
-            self.ret_type = as_expr.ret_type
-        except:
-            self.ret_type = expr_elem.ret_type
+        self.is_expr = is_expr
+
+        if(is_expr):
+            self.ret_type = "bool"
+        else:
+            try: 
+                self.ret_type = as_expr.ret_type
+            except:
+                self.ret_type = expr_elem.ret_type
 
     def evaluate(self):
         # Implementación de la evaluación del elemento de expresión
@@ -424,17 +437,23 @@ class AsExprNode:
         pass
 
 class LogicConcatExprNode:
-    def __init__(self, logic_concat_expr, comp_expr):
+    def __init__(self, logic_concat_expr, comp_expr, arroba_type):
         self.logic_concat_expr = logic_concat_expr
         self.comp_expr = comp_expr
+        self.arroba_type = arroba_type
         try:
             self.ret_type = comp_expr.ret_type
         except:
             self.ret_type = logic_concat_expr.ret_type
 
     def evaluate(self):
-        # Implementación de la evaluación de la expresión de concatenación lógica
-        pass
+        if(self.arroba_type != None):
+            if(self.arroba_type == "@"):
+                return self.logic_concat_expr.evaluate() + self.comp_expr.evaluate()
+            else:
+                return self.logic_concat_expr.evaluate() + " " + self.comp_expr.evaluate()
+        else:
+            return self.comp_expr.evaluate()
 
 class CompExprNode:
     def __init__(self, comp_expr, aritm_expr):
@@ -446,14 +465,17 @@ class CompExprNode:
             self.ret_type = comp_expr.ret_type
 
     def evaluate(self):
-        # Implementación de la evaluación de la expresión de comparación
-        pass
+       return self.aritm_expr.evaluate()
+        
 
 class EqualsNode:
     def __init__(self, comp_expr, aritm_expr):
         self.comp_expr = comp_expr
         self.aritm_expr = aritm_expr
         self.ret_type = "bool"
+
+    def evaluate(self):
+        return self.comp_expr.evaluate() == self.aritm_expr.evaluate()
 
 class NotEqualsNode:
     def __init__(self, comp_expr, aritm_expr):
@@ -463,7 +485,7 @@ class NotEqualsNode:
 
     def evaluate(self):
         # Implementación de la evaluación de la expresión de igualdad
-        pass
+        return self.comp_expr.evaluate() != self.aritm_expr.evaluate()
 
 class LessNode:
     def __init__(self, comp_expr, aritm_expr):
@@ -472,8 +494,7 @@ class LessNode:
         self.ret_type = "bool"
 
     def evaluate(self):
-        # Implementación de la evaluación de la expresión de menor que
-        pass
+        return self.comp_expr.evaluate() < self.aritm_expr.evaluate()
 
 class GreaterNode:
     def __init__(self, comp_expr, aritm_expr):
@@ -482,8 +503,7 @@ class GreaterNode:
         self.ret_type = "bool"
 
     def evaluate(self):
-        # Implementación de la evaluación de la expresión de mayor que
-        pass
+        return self.comp_expr.evaluate() > self.aritm_expr.evaluate()
 
 class LessEqualsNode:
     def __init__(self, comp_expr, aritm_expr):
@@ -492,8 +512,7 @@ class LessEqualsNode:
         self.ret_type = "bool"
 
     def evaluate(self):
-        # Implementación de la evaluación de la expresión de menor o igual que
-        pass
+        return self.comp_expr.evaluate() <= self.aritm_expr.evaluate()
 
 class GreaterEqualsNode:
     def __init__(self, comp_expr, aritm_expr):
@@ -502,8 +521,7 @@ class GreaterEqualsNode:
         self.ret_type = "bool"
 
     def evaluate(self):
-        # Implementación de la evaluación de la expresión de mayor o igual que
-        pass
+        return self.comp_expr.evaluate() >= self.aritm_expr.evaluate()
 
 class AritmExprNode:
     def __init__(self, aritm_expr, term):
@@ -512,8 +530,7 @@ class AritmExprNode:
         self.ret_type = aritm_expr.ret_type #####################
 
     def evaluate(self):
-        # Implementación de la evaluación de la expresión aritmética
-        pass
+        return self.aritm_expr.evaluate()
 
 class TermNode:
     def __init__(self, term, pow_expr):
@@ -525,8 +542,7 @@ class TermNode:
             self.ret_type = term.ret_type
 
     def evaluate(self):
-        # Implementación de la evaluación del término aritmético
-        pass
+        return self.term.evaluate()
 
 class PowExprNode:
     def __init__(self, pow_expr, negative):
@@ -538,17 +554,22 @@ class PowExprNode:
             self.ret_type = pow_expr.ret_type
 
     def evaluate(self):
-        # Implementación de la evaluación de la expresión de potencia
-        pass
+        if(self.pow_expr != None):
+            return self.pow_expr.evaluate() ** self.negative.evaluate()
+        else:
+            return self.negative.evaluate()
 
 class NegativeNode:
-    def __init__(self, factor):
+    def __init__(self, factor, is_negative):
         self.factor = factor
+        self.is_negative = is_negative
         self.ret_type = factor.ret_type
 
     def evaluate(self):
-        # Implementación de la evaluación de la expresión negativa
-        pass
+        if(self.is_negative):
+            return -self.factor.evaluate()
+        else:
+            return self.factor.evaluate()
 
 class FactorNode:
     def __init__(self, expr, params_aux,expr2):
@@ -598,16 +619,30 @@ class ArgsInParNode:
         pass
 
 class NumNode: 
-    def __init__(self, value,value2):
+    def __init__(self, value,value2, math_func):
         self.value= value
         self.value2= value2
+        self.math_func = math_func
         self.ret_type = "num"
 
 
     def evaluate(self):
-        # Implementación de la evaluación del número
-        pass
-
+        if(self.math_func != None):
+            if(self.math_func == "sin"):
+                return math.sin(int(self.value))
+            elif(self.math_func == "cos"):
+                return math.cos(int(self.value))
+            elif(self.math_func == "sqrt"):
+                return math.sqrt(int(self.value))
+            elif(self.math_func == "log"):
+                return math.log(int(self.value),int(self.value2))
+            elif(self.math_func == "exp"):
+                return math.exp(int(self.value))
+            elif(self.math_func == "rand"):
+                return random.randint()####
+        else: 
+            return int(self.value)
+        
 class BoolNode:
     def __init__(self, value):
         self.value= value
@@ -623,7 +658,17 @@ class StrNode:
         self.ret_type = "str"
 
     def evaluate(self):
-        # Implementación de la evaluación de la cadena de texto
+        return self.value
+
+class VectorNode:
+    def __init__(self, expr, params_aux, expr2):
+        self.expr = expr
+        self.params_aux = params_aux
+        self.expr2 = expr2
+        self.ret_type = "vector"
+
+    def evaluate(self):
+        # Implementación de la evaluación del vector
         pass
 
 #endregion
@@ -1023,6 +1068,15 @@ class Scope:
     def __init__(self, parent=None):
         self.local_vars = []
         self.local_funcs = []
+
+        #las nuevas para la evaluacion
+        self.variables = {}
+        self.variables_extends = {}
+        self.functions = {}
+        self.functions_extends = {}
+        self.protocols = []
+        self.types = []
+
         self.parent = parent
         self.children = []
         self.var_index_at_parent = 0 if parent is None else len(parent.local_vars)
@@ -1038,6 +1092,8 @@ class Scope:
             return False
         self.local_vars.append(VariableInfo(vname))
         return True
+    
+
     
     def define_function(self, fname, params):
         if self.is_local_func(fname,len(params)):
@@ -1067,7 +1123,27 @@ class Scope:
         for func_info in self.local_funcs:
             if fname == func_info.name and n == len(func_info.params):
                 return func_info
-        return None       
+        return None  
+    
+    #funciones nuevas
+    def insert_variable(self, var_name, var_value):
+        self.variables[var_name] = var_value
+
+    def get_variable(self, var_name):
+        return self.variables[var_name]
+    
+    def insert_function(self, fun_name, fun_params, fun_extends, fun_body):
+        self.functions[fun_name] = (fun_params, fun_extends, fun_body)
+        self.functions_extends[fun_name] = fun_extends
+    
+    def get_function(self, fun_name):
+        return self.functions[fun_name]
+    
+    def insert_type(self, type_name, type_params, type_inherits, type_decls_met):
+        self.types[type_name] = (type_params, type_inherits, type_decls_met)
+    
+    def get_type(self, type_name):
+        return self.types[type_name]
 
 class SemanticCheckerVisitor(object):
     def __init__(self):
@@ -1265,7 +1341,7 @@ class SemanticCheckerVisitor(object):
     def visit(self, node, scope):
         # if not scope.define_variable(node.id_):
         #     self.errors.append(f'Variable {node.id_} is already defined in current scope.')
-        if scope.is_var_defined(node.id_extend.id_):
+        if scope.is_var_defined(node.id_extend.id_):###########################is type defined
             self.errors.append(f'Variable {node.id_extend.id_} is not defined in current scope.')
         self.visit(node.expr, scope)
 
@@ -1321,7 +1397,7 @@ class SemanticCheckerVisitor(object):
 
     @visitor.when(NotNode)
     def visit(self, node, scope):
-        self.visit(node.logic_concat_expr, scope)
+        #self.visit(node.logic_concat_expr, scope)
         self.visit(node.comp_expr, scope)
 
     @visitor.when(AritmExprNode)
@@ -1408,6 +1484,13 @@ class SemanticCheckerVisitor(object):
         self.visit(node.params_aux, scope)
         self.visit(node.expr2, scope)
 
+    @visitor.when(VectorNode)
+    def visit(self, node, scope):
+        self.visit(node.expr, scope)
+        self.visit(node.params_aux, scope)
+        self.visit(node.expr2, scope)
+
+
     @visitor.when(LocNode)
     def visit(self, node, scope):
         # if not scope.is_var_defined(node.id_):
@@ -1429,23 +1512,6 @@ class SemanticCheckerVisitor(object):
     
 
     
-
-
-    
-
-
-        
-
-    
-
-    
-
-        
-
-
-
-    
-
 
 
     ####################################
@@ -1581,3 +1647,321 @@ def findType(node):
     #         return "num"
     # except:
     #     pass
+
+#region Evaluate
+
+class SemanticCheckerEvaluate(object):
+    def __init__(self):
+        #self.errors = []
+        self.results = []
+    
+    @visitor.on('node')
+    def visit(self, node, scope):
+        pass
+    
+    @visitor.when(ProgramNode)
+    def visit(self, node, scope=None):
+        if scope is None:
+            scope = Scope()
+        try :
+            x = self.visit(node.program, scope)
+            if x != None:
+                self.results.append(x)
+        except:
+            pass
+        try :
+            res = self.visit(node.expr, scope)
+            if res != None:
+                self.results.append(res)
+                return res
+        except:
+            pass
+    
+    @visitor.when(ExprNode)
+    def visit(self, node, scope):
+        self.visit(node.expr_elem, scope)
+        self.visit(node.expr, scope)
+
+    @visitor.when(FunctionStatNode)#########################################################
+    def visit(self, node, scope):
+        scope.insert_function(node.id_, node.params, node.id_extend, node.body)######### no se si es node.params.paramsa_aux o como esta puesto
+
+
+    @visitor.when(TypeStatNode)##############################################################
+    def visit(self, node, scope):
+        scope.insert_type(node.id_, node.params_in_par.params, node.inherit, node.decls_methods_semi)##########
+        return
+        
+    @visitor.when(ProtocolStatNode)#############################################################
+    def visit(self, node, scope):
+        pass
+
+    @visitor.when(MethodProtocolNode)############################################################
+    def visit(self, node, scope):
+        pass
+    
+    @visitor.when(MethodNode)################################################################
+    def visit(self, node, scope):
+        pass
+
+    @visitor.when(ExtendsExprNode)###############################################################
+    def visit(self, node, scope):
+        pass
+
+    @visitor.when(InheritsExprNode)############################################################
+    def visit(self, node, scope):
+        pass##################################################
+
+    @visitor.when(BodyNode)####################################################################
+    def visit(self, node, scope):
+        return self.visit(node.expr, scope)
+
+    @visitor.when(ParamsNode)
+    def visit(self, node, scope):
+        return self.visit(node.params_aux, scope)
+
+    @visitor.when(ParamsAuxNode)
+    def visit(self, node, scope):
+        pass
+        
+    @visitor.when(ParamsInParNode)
+    def visit(self, node, scope):
+        pass
+
+    @visitor.when(InstExprNode)
+    def visit(self, node, scope):
+        pass
+    
+    @visitor.when(ArrayExprNode)
+    def visit(self, node, scope):
+        pass
+
+    @visitor.when(PrintExprNode)
+    def visit(self, node, scope):
+        return str(self.visit(node.expr, scope))
+
+    @visitor.when(LetExprNode)
+    def visit(self, node, scope):
+        #inner_scope = scope.create_child_scope()
+        for decl in node.decls:##########################3
+            scope.variables[decl.id_] = self.visit(decl.expr, scope)
+            if(decl.id_extend.id_ != None):
+                scope.variables_extends[decl.id_] = decl.id_extend.id_ 
+        
+        return self.visit(node.expr_body, scope)
+
+    @visitor.when(DestrExprNode)
+    def visit(self, node, scope):
+
+        scope.variables[node.loc.id_] = self.visit(node.expr, scope)
+
+
+    @visitor.when(WhileExprNode)
+    def visit(self, node, scope):
+        while(node.expr):
+            self.visit(node.expr_body, scope)
+
+    @visitor.when(ForExprNode)
+    def visit(self, node, scope):
+        pass
+    
+    @visitor.when(IfExprNode)
+    def visit(self, node, scope):
+        if(self.visit(node.expr, scope)):
+            return self.visit(node.expr_body, scope)
+        else:
+            return self.visit(node.elif_expr, scope)
+        
+
+    @visitor.when(ElifExprNode)#######
+    def visit(self, node, scope):
+        if(self.visit(node.expr, scope)):
+            return self.visit(node.expr_body, scope)
+        return self.visit(node.elif_expr, scope)
+        
+
+    @visitor.when(ElseExprNode)
+    def visit(self, node, scope):
+        return self.visit(node.expr_body, scope)
+
+    @visitor.when(DeclNode)
+    def visit(self, node, scope):
+        pass
+
+    @visitor.when(DeclsNode)
+    def visit(self, node, scope):
+        pass
+    
+    @visitor.when(ExprBodyNode)
+    def visit(self, node, scope):
+        return self.visit(node.expr, scope)
+    
+    @visitor.when(ExprListSemiNode)
+    def visit(self, node, scope):
+        if(node.expr_list_semi != None):
+            return self.visit(node.expr_list_semi, scope)
+        else: 
+            return self.visit(node.expr, scope)
+
+    @visitor.when(IdExtendNode) ###################
+    def visit(self, node, scope):
+        pass
+    
+    @visitor.when(ExprElemNode)
+    def visit(self, node, scope):
+        if(node.is_expr):
+            if(node.expr_elem.ret_type == node.as_expr.ret_type):
+                return True
+            elif(node.expr_elem in scope.variables_extends.keys() and scope.variables_extends[node.expr_elem] == node.as_expr.ret_type):            
+                return True
+            else:
+                return False
+        else:
+            return self.visit(node.expr_elem, scope)
+
+    @visitor.when(AsExprNode)
+    def visit(self, node, scope):
+        return self.visit(node.as_expr, scope)
+
+    @visitor.when(LogicConcatExprNode)
+    def visit(self, node, scope):
+        if(node.arroba_type == "@"):
+            return str(self.visit(node.logic_concat_expr, scope)) + str(self.visit(node.comp_expr, scope))
+        elif(node.arroba_type == "@@"):
+            return str(self.visit(node.logic_concat_expr, scope)) + " " + str(self.visit(node.comp_expr, scope))
+        else:
+            return self.visit(node.logic_concat_expr, scope)
+    
+    @visitor.when(CompExprNode)
+    def visit(self, node, scope):
+        return self.visit(node.comp_expr, scope)
+
+    @visitor.when(EqualsNode)
+    def visit(self, node, scope):
+        return self.visit(node.comp_expr, scope) == self.visit(node.aritm_expr, scope)
+    
+    @visitor.when(NotEqualsNode)
+    def visit(self, node, scope):
+        return self.visit(node.comp_expr, scope) != self.visit(node.aritm_expr, scope)
+    
+    @visitor.when(LessNode)
+    def visit(self, node, scope):
+        return self.visit(node.comp_expr, scope) < self.visit(node.aritm_expr, scope)
+    
+    @visitor.when(LessEqualsNode)
+    def visit(self, node, scope):
+        return self.visit(node.comp_expr, scope) <= self.visit(node.aritm_expr, scope)
+    
+    @visitor.when(GreaterNode)
+    def visit(self, node, scope):
+        return self.visit(node.comp_expr, scope) > self.visit(node.aritm_expr, scope)
+    
+    @visitor.when(GreaterEqualsNode)
+    def visit(self, node, scope):
+        return self.visit(node.comp_expr, scope) >= self.visit(node.aritm_expr, scope)
+    
+
+            
+    @visitor.when(AndNode)
+    def visit(self, node, scope):
+        return self.visit(node.logic_concat_expr, scope) and self.visit(node.comp_expr, scope)
+
+    @visitor.when(OrNode)
+    def visit(self, node, scope):
+        return self.visit(node.logic_concat_expr, scope) or self.visit(node.comp_expr, scope)
+
+    @visitor.when(NotNode)
+    def visit(self, node, scope):
+        return not self.visit(node.comp_expr, scope)
+
+    @visitor.when(AritmExprNode)
+    def visit(self, node, scope):
+        return self.visit(node.aritm_expr, scope)
+
+
+    @visitor.when(SumNode)
+    def visit(self, node, scope):
+        return self.visit(node.aritm_expr,scope) + self.visit(node.term,scope)
+
+    @visitor.when(MinusNode)
+    def visit(self, node, scope):
+        return self.visit(node.aritm_expr,scope) - self.visit(node.term,scope)
+
+    @visitor.when(DivNode)
+    def visit(self, node, scope):
+        return self.visit(node.term,scope) / self.visit(node.pow_expr,scope)
+
+    @visitor.when(MultNode)
+    def visit(self, node, scope):
+        return self.visit(node.term,scope) * self.visit(node.pow_expr,scope)
+    
+    @visitor.when(ModNode)
+    def visit(self, node, scope):
+        return self.visit(node.term,scope) % self.visit(node.pow_expr,scope)
+    
+
+    @visitor.when(TermNode)
+    def visit(self, node, scope):
+        return self.visit(node.term, scope)
+
+    @visitor.when(PowExprNode)
+    def visit(self, node, scope):
+        if(node.negative is not None):
+            return self.visit(node.pow_expr, scope) ** self.visit(node.negative, scope)
+        
+        else:
+            return self.visit(node.pow_expr, scope)
+
+    @visitor.when(NegativeNode)
+    def visit(self, node, scope):
+        if(node.is_negative):
+            return -self.visit(node.negative, scope)
+        else:
+            return self.visit(node.factor, scope)
+    
+    @visitor.when(FactorNode)
+    def visit(self, node, scope):
+        return self.visit(node.expr, scope)
+    
+
+    @visitor.when(LocNode) #########Este tampoco
+    def visit(self, node, scope):
+        pass
+    
+    @visitor.when(ArgsNode) ############# ?
+    def visit(self, node, scope):
+        pass
+    
+    @visitor.when(ArgsAuxNode) ########## ?
+    def visit(self, node, scope):
+        pass
+    
+    @visitor.when(ArgsInParNode)
+    def visit(self, node, scope):
+        return self.visit(node.args, scope)
+    
+    @visitor.when(NumNode)
+    def visit(self, node, scope):
+        if(node.math_func != None):
+            if(node.math_func == "sin"):
+                return math.sin(int(node.value))
+            elif(node.math_func == "cos"):
+                return math.cos(int(node.value))
+            elif(node.math_func == "sqrt"):
+                return math.sqrt(int(node.value))
+            elif(node.math_func == "log"):
+                return math.log(int(node.value),int(node.value2))
+            elif(node.math_func == "exp"):
+                return math.exp(int(node.value))
+            elif(node.math_func == "rand"):
+                return random.randint()####
+        else: 
+            return int(node.value)
+    
+    #@visitor.when(BoolNode)
+
+    @visitor.when(StrNode)
+    def visit(self, node, scope):
+        return node.value
+
+#endregion
