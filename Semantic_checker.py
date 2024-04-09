@@ -770,9 +770,9 @@ class FormatVisitor(object):
         id = self.visit(node.id_, tabs + 1)
         params_in_par = self.visit(node.params_in_par, tabs + 1)
         inherits_expr = self.visit(node.inherits_expr, tabs + 1)
-        decls_method_semi = self.visit(node.decls_method_semi, tabs + 1)
+        decls_methods_semi = self.visit(node.decls_methods_semi, tabs + 1)
 
-        return f'{ans}\n{id}\n{params_in_par}\n{inherits_expr}\n{decls_method_semi}'
+        return f'{ans}\n{id}\n{params_in_par}\n{inherits_expr}\n{decls_methods_semi}'
     
     @visitor.when(ProtocolStatNode)
     def visit(self, node, tabs=0):
@@ -1155,8 +1155,9 @@ class Scope:
         self.variables_extends = {}
         self.functions = {}
         self.functions_extends = {}
-        self.protocols = []
-        self.types = []
+        self.protocols = {}
+        self.protocols_extends = {}
+        self.types = {}
 
         self.parent = parent
         self.children = []
@@ -1225,6 +1226,13 @@ class Scope:
     
     def get_type(self, type_name):
         return self.types[type_name]
+    
+    def insert_protocol(self, protocol_name, protocol_extends, protocol_method_list):
+        self.protocols[protocol_name] = (protocol_extends, protocol_method_list)
+        self.protocols_extends[protocol_name] = protocol_extends
+
+    def get_protocol(self, protocol_name):
+        return self.protocols[protocol_name]
 
 class SemanticCheckerVisitor(object):
     def __init__(self):
@@ -1259,13 +1267,14 @@ class SemanticCheckerVisitor(object):
         if not scope.define_variable(node.id_):
             self.errors.append(f'Variable {node.id_} is already defined in current scope.')
         
-        if not scope.is_var_defined(node.inherit):
-            self.errors.append(f'Variable {node.inherit} is not defined in current scope.')###############
+        if not scope.is_var_defined(node.inherits_expr):
+            self.errors.append(f'Variable {node.inherits_expr} is not defined in current scope.')###############
         
         inner_scope = scope.create_child_scope()
-        for param in node.params_in_par:
-            if not inner_scope.define_variable(param):
-                self.errors.append(f'Function {node.id_} is invalid, its arguments have to be different from each other.')
+        if(node.params_in_par.params != None):
+            for param in node.params_in_par.params.params_aux:
+                if not inner_scope.define_variable(param):
+                    self.errors.append(f'Function {node.id_} is invalid, its arguments have to be different from each other.')
 
         
         self.visit(node.decls_methods_semi, inner_scope)
@@ -1274,8 +1283,8 @@ class SemanticCheckerVisitor(object):
     def visit(self, node, scope):
         if not scope.define_variable(node.id_):
             self.errors.append(f'Variable {node.id_} is already defined in current scope.')
-        if not scope.is_var_defined(node.id_extends):
-            self.errors.append(f'Variable {node.id_extends} is not defined in current scope.')
+        if node.extends_expr.id_ != None and not scope.is_var_defined(node.extends_expr):
+            self.errors.append(f'Variable {node.extends_expr} is not defined in current scope.')
         inner_scope = scope.create_child_scope()
 
         self.visit(node.method_protocol_list, inner_scope)
@@ -1541,7 +1550,7 @@ class SemanticCheckerVisitor(object):
         type_2 = node.term.ret_type
         if(not(type_1 == type_2) and type_1 != 'str' and type_2 != 'str'):
             self.errors.append(f'Incompatible types in arithmetical expression.')
-        self.visit(node.aritm_expr, scope)
+        self.visit(node.pow_expr, scope)
         self.visit(node.term, scope)
     
 
@@ -1747,14 +1756,23 @@ class SemanticCheckerEvaluate(object):
         try :
             x = self.visit(node.program, scope)
             if x != None:
-                self.results.append(x)
+               for elem in x:
+                  self.results.append(elem)
         except:
             pass
         try :
             res = self.visit(node.expr, scope)
-            if res != None:
-                self.results.append(res)
-                return res
+            if res != None and res != []:
+                if isinstance(res,list):
+                    for elem in res:
+                        if isinstance(elem,list):
+                            for elem2 in elem:
+                                if(elem2 != None):
+                                    self.results.append(elem2)
+                        else:
+                            self.results.append(elem)
+                else:
+                    self.results.append(res)
         except:
             pass
     
@@ -1770,12 +1788,11 @@ class SemanticCheckerEvaluate(object):
 
     @visitor.when(TypeStatNode)##############################################################
     def visit(self, node, scope):
-        scope.insert_type(node.id_, node.params_in_par.params, node.inherit, node.decls_methods_semi)##########
-        return
+        scope.insert_type(node.id_, node.params_in_par.params, node.inherits_expr, node.decls_methods_semi)##########S
         
-    @visitor.when(ProtocolStatNode)#############################################################
+    @visitor.when(ProtocolStatNode)
     def visit(self, node, scope):
-        pass
+        scope.insert_protocol(node.id_ ,node.extends_expr, node.method_protocol_list)
 
     @visitor.when(MethodProtocolNode)############################################################
     def visit(self, node, scope):
@@ -1839,13 +1856,39 @@ class SemanticCheckerEvaluate(object):
 
     @visitor.when(WhileExprNode)
     def visit(self, node, scope):
-        while(node.expr):
-            self.visit(node.expr_body, scope)
+        ret_val = []
+        temp=self.visit(node.expr, scope)
+        while(temp):
+            ret_val.append(self.visit(node.expr_body, scope))
+            temp=self.visit(node.expr, scope)
+        return ret_val
 
     @visitor.when(ForExprNode)
     def visit(self, node, scope):
-        pass
-    
+        ret_val = []
+        if(node.expr.ret_type == "vector"):
+            vector = self.visit(node.expr,scope)
+        if(node.expr.expr_elem.as_expr.logic_concat_expr.comp_expr.aritm_expr.term.pow_expr.factor.expr.id_ == "range"):
+            x = node.expr.expr_elem.as_expr.logic_concat_expr.comp_expr.aritm_expr.term.pow_expr.factor.expr.args_in_par.args.args_aux
+            vector = range(int(x.args_aux.args_aux.expr_elem.as_expr.logic_concat_expr.comp_expr.aritm_expr.term.pow_expr.factor.value),int(x.expr.expr_elem.as_expr.logic_concat_expr.comp_expr.aritm_expr.term.pow_expr.factor.value))
+            temporary = []
+            for i in vector:
+                temporary.append(i)
+            vector = [[temporary]]
+        elif(node.expr.ret_type == "str"):
+            vector = scope.variables[node.expr.expr_elem.as_expr.logic_concat_expr.comp_expr.aritm_expr.term.pow_expr.factor.expr.id_]
+        if(vector!=None and vector!=[]):
+            temp=vector[0][0]
+            for i in temp:
+                scope.variables[node.id_] = i
+                x=self.visit(node.expr_body, scope)
+                try:
+                    if(temporary != None):
+                        ret_val.append(x)
+                except:
+                    ret_val.append(x[0])
+            return ret_val
+
     @visitor.when(IfExprNode)
     def visit(self, node, scope):
         if(self.visit(node.expr, scope)):
@@ -1881,9 +1924,23 @@ class SemanticCheckerEvaluate(object):
     def visit(self, node, scope):
         ret_value =[]
         if(node.expr_list_semi != None):
-            ret_value.append(self.visit(node.expr_list_semi, scope))
+            temp=self.visit(node.expr_list_semi, scope)
+            if isinstance(temp,list):
+                for i in temp:
+                    ret_value.append(i)
+            else:
+                ret_value.append(temp)
+
         if(node.expr != None):
-            ret_value.append(self.visit(node.expr, scope))
+            temp2=self.visit(node.expr, scope)
+
+            if isinstance(temp2,list):
+                for i in temp2:
+                    ret_value.append(i)
+            else:
+                ret_value.append(temp2)
+
+            
         return ret_value
 
     @visitor.when(IdExtendNode) ###################
@@ -1942,8 +1999,6 @@ class SemanticCheckerEvaluate(object):
     @visitor.when(GreaterEqualsNode)
     def visit(self, node, scope):
         return self.visit(node.comp_expr, scope) >= self.visit(node.aritm_expr, scope)
-    
-
             
     @visitor.when(AndNode)
     def visit(self, node, scope):
@@ -1964,23 +2019,25 @@ class SemanticCheckerEvaluate(object):
 
     @visitor.when(SumNode)
     def visit(self, node, scope):
-        return self.visit(node.aritm_expr,scope) + self.visit(node.term,scope)
+        a= int(self.visit(node.aritm_expr,scope)) 
+        b= int(self.visit(node.term,scope))
+        return a +b
 
     @visitor.when(MinusNode)
     def visit(self, node, scope):
-        return self.visit(node.aritm_expr,scope) - self.visit(node.term,scope)
+        return int(self.visit(node.aritm_expr,scope)) - int(self.visit(node.term,scope))
 
     @visitor.when(DivNode)
     def visit(self, node, scope):
-        return self.visit(node.term,scope) / self.visit(node.pow_expr,scope)
+        return int(self.visit(node.term,scope)) / int(self.visit(node.pow_expr,scope))
 
     @visitor.when(MultNode)
     def visit(self, node, scope):
-        return self.visit(node.term,scope) * self.visit(node.pow_expr,scope)
+        return int(self.visit(node.term,scope)) * int(self.visit(node.pow_expr,scope))
     
     @visitor.when(ModNode)
     def visit(self, node, scope):
-        return self.visit(node.term,scope) % self.visit(node.pow_expr,scope)
+        return int(self.visit(node.term,scope)) % int(self.visit(node.pow_expr,scope))
     
 
     @visitor.when(TermNode)
@@ -2007,23 +2064,47 @@ class SemanticCheckerEvaluate(object):
         return self.visit(node.expr, scope)
     
 
-    @visitor.when(LocNode) #########Este tampoco##################################
+    @visitor.when(LocNode)
     def visit(self, node, scope):
         if(node.loc is None):
             if(not node.args_in_par.is_args_in_par):####################
                 return scope.get_variable(node.id_)
             else:
-                pass
+                func = scope.get_function(node.id_)
+                params = func[0].params_aux[0].id_
+                extends = func[1]
+                body = func[2]
+                args_values = node.args_in_par.args.args_aux.args_aux.expr_elem.as_expr.logic_concat_expr.comp_expr.aritm_expr.term.pow_expr.factor.value
+
+                scope.insert_variable(params, args_values)
+                a = self.visit(body, scope)
+                return a
         else:
             pass
     
     @visitor.when(ArgsNode) ############# ?
     def visit(self, node, scope):
-        pass
+        if(node.args_aux != None):
+            return self.visit(node.args_aux, scope)
     
     @visitor.when(ArgsAuxNode) ########## ?
     def visit(self, node, scope):
-        pass
+        ret_value = []
+
+        temp1=self.visit(node.args_aux,scope)
+        temp2=self.visit(node.expr, scope)
+        if(isinstance(temp1,list)):
+            for i in temp1:
+                ret_value.append(i)
+        else:
+            ret_value.append(temp1)
+        if(isinstance(temp2,list)):
+            for i in temp2:
+                ret_value.append(i)
+        else:
+            ret_value.append(temp2)
+
+        return ret_value
     
     @visitor.when(ArgsInParNode)
     def visit(self, node, scope):
@@ -2033,15 +2114,15 @@ class SemanticCheckerEvaluate(object):
     def visit(self, node, scope):
         if(node.math_func != None):
             if(node.math_func == "sin"):
-                return math.sin(int(node.value))
+                return math.sin(int(self.visit(node.value,scope)))
             elif(node.math_func == "cos"):
-                return math.cos(int(node.value))
+                return math.cos(int(self.visit(node.value,scope)))
             elif(node.math_func == "sqrt"):
-                return math.sqrt(int(node.value))
+                return math.sqrt(int(self.visit(node.value,scope)))
             elif(node.math_func == "log"):
-                return math.log(int(node.value),int(node.value2))
+                return math.log(int(self.visit(node.value,scope)),int(self.visit(node.value2,scope)))
             elif(node.math_func == "exp"):
-                return math.exp(int(node.value))
+                return math.exp(int(self.visit(node.value,scope)))
             elif(node.math_func == "rand"):
                 return random.randint()####
         else: 
@@ -2052,5 +2133,12 @@ class SemanticCheckerEvaluate(object):
     @visitor.when(StrNode)
     def visit(self, node, scope):
         return node.value
+    
+    @visitor.when(VectorNode)
+    def visit(self, node, scope):
+        if(node.params_aux is None and node.expr2 is None):
+            return [[self.visit(node.expr, scope)]]
+        else:
+            pass
 
 #endregion

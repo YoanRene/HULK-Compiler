@@ -14,7 +14,8 @@ def init():
     G,lexer= HulkGrammar()
     parser = SLR1Parser(G,True)
 
-    texts =['let a = 5 in {a; print(9+a); };']
+    texts =[ '(5**2)+1;']
+    #'function tani(x) {x+1;} tani(1);'
 
     parserslist = []
     operationslist=[]
@@ -64,9 +65,10 @@ def init():
     for i in range(len(astlist)):
         semantic_checker = SemanticCheckerEvaluate()
         results = semantic_checker.visit(astlist[i])
-        print(results)
-        # for j, res in enumerate(results,1):
-        #     print(texts[i])
-        #     print(f'{j}.', res)
+        results=semantic_checker.results
+        for j, res in enumerate(results,1):
+            if(res != None):
+                print(texts[i])
+                print(res)
 
 init()

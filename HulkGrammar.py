@@ -65,9 +65,9 @@ def HulkGrammar():
     
     function_stat %= function_ + id_ + opar + params + cpar + id_extend + body ,lambda h,s: FunctionStatNode(s[2],s[4],s[6],s[7])
 
-    type_stat %= type_ + id_ + params_in_par + inherits_expr + okey + decls_methods_semi  + ckey , lambda h,s: TypeStatNode(s[2],s[4],s[6])
+    type_stat %= type_ + id_ + params_in_par + inherits_expr + okey + decls_methods_semi  + ckey , lambda h,s: TypeStatNode(s[2],s[3],s[4],s[6])
 
-    protocol_stat %= protocol + id_ + extends_expr + okey + method_protocol_list + ckey , lambda h,s: ProtocolStatNode(s[2],s[4],s[6])
+    protocol_stat %= protocol + id_ + extends_expr + okey + method_protocol_list + ckey , lambda h,s: ProtocolStatNode(s[2],s[3],s[5])
 
     method_protocol %= id_ + opar + params + cpar + id_extend  , lambda h,s: MethodProtocolNode(s[1],s[3],s[5])
 
@@ -80,9 +80,10 @@ def HulkGrammar():
     inherits_expr %= inherits + id_ + args_in_par  , lambda h,s: InheritsExprNode( s[2], s[3])
     inherits_expr %= G.Epsilon , lambda h,s: InheritsExprNode( None, None)
 
-    decls_methods_semi %= decls_methods_semi + decl + semi , lambda h,s: s[1] + [s[2]] ##
+    #decls_methods_semi %= decls_methods_semi + decl + semi , lambda h,s: s[1] + [s[2]] ##
+    decls_methods_semi %= decls_methods_semi + decl + semi, lambda h,s: s[1] + [s[2]] ##
     decls_methods_semi %= decls_methods_semi + method , lambda h,s: s[1] + [s[2]] ##
-    decls_methods_semi %= G.Epsilon , lambda h,s: None
+    decls_methods_semi %= G.Epsilon , lambda h,s: []
 
     method %= id_ + opar + params + cpar + id_extend + body , lambda h,s: MethodNode(s[1],s[3],s[5],s[6])
 
@@ -218,8 +219,8 @@ def HulkGrammar():
 
     letters = '|'.join(chr(n) for n in range(ord('a'),ord('z')+1))
     letters = letters +'|'+'|'.join(chr(n) for n in range(ord('A'),ord('Z')+1))
-    symbols="!|@|%|^|&|\\*|_|+|-|/|:|;|<|>|=|,|.|?|~|`|\\(|\\)|[|]|{|}|#|'|\\||¿|¡|º|ª|¬"
-    string_re = f'\\"({letters}|{nonzero_digits}|{symbols}| |\\")*\\"'
+    symbols="!|@|%|^|&|\\*|_|+|-|/|:|;|<|>|=|,|.|?|~|`|\\(|\\)|[|]|{|}|#|'|\\||¿|¡|º|ª|¬"  #\\* todos los doble palos
+    string_re = f'\\"({letters}|{nonzero_digits}|{symbols}| |\\")*\\"'   #\\)*\\"
 
     lexer = Lexer([
         ('space',' *'),
