@@ -750,16 +750,26 @@ class FormatVisitor(object):
     @visitor.when(AndNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__AndNode <expr> and <expr>'
-        left = self.visit(node.expr, tabs + 1)
-        right = self.visit(node.expr2, tabs + 1)
-        return f'{ans}\n{left}\n{right}'
+        left = self.visit(node.comp_expr, tabs + 1)
+        right = self.visit(node.logic_concat_expr, tabs + 1)
+        if right != [] and right != None:
+            if left != [] and left != None:
+                return f'{ans}\n{left}\n{right}'
+            return f'{ans}\n{right}'
+        elif left != [] and left != None:
+            return f'{ans}\n{left}'
     
     @visitor.when(OrNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__OrNode <expr> or <expr>'
-        left = self.visit(node.expr, tabs + 1)
-        right = self.visit(node.expr2, tabs + 1)
-        return f'{ans}\n{left}\n{right}'
+        left = self.visit(node.comp_expr, tabs + 1)
+        right = self.visit(node.logic_concat_expr, tabs + 1)
+        if right != [] and right != None:
+            if left != [] and left != None:
+                return f'{ans}\n{left}\n{right}'
+            return f'{ans}\n{right}'
+        elif left != [] and left != None:
+            return f'{ans}\n{left}'
     
     @visitor.when(NotNode)
     def visit(self, node, tabs=0):
