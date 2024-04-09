@@ -309,6 +309,7 @@ class DestrExprNode:
     def __init__(self, loc, expr):
         self.loc = loc
         self.expr = expr
+        self.ret_type = "destr"
 
     def evaluate(self):
         # Implementación de la evaluación de la expresión de destrucción
@@ -707,25 +708,62 @@ class FormatVisitor(object):
         ans = '\t' * tabs + f'\\__MultNode <expr> * <expr>'
         left = self.visit(node.term, tabs + 1)
         right = self.visit(node.pow_expr, tabs + 1)
-        return f'{ans}\n{left}\n{right}'
+
+        if(right !=[] and right!=None):
+            if left != [] and left != None:
+                return f'{ans}\n{left}\n{right}'
+            return f'{ans}\n{right}'
+        return f'{ans}'
     
     @visitor.when(DivNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__DivNode <expr> / <expr>'
         left = self.visit(node.term, tabs + 1)
         right = self.visit(node.pow_expr, tabs + 1)
-        return f'{ans}\n{left}\n{right}'
+        if(right !=[] and right!=None):
+            if left != [] and left != None:
+                return f'{ans}\n{left}\n{right}'
+            return f'{ans}\n{right}'
+        return f'{ans}'
     
     @visitor.when(ModNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__ModNode <expr> % <expr>'
         left = self.visit(node.term, tabs + 1)
         right = self.visit(node.pow_expr, tabs + 1)
-        return f'{ans}\n{left}\n{right}'
+        if(right !=[] and right!=None):
+            if left != [] and left != None:
+                return f'{ans}\n{left}\n{right}'
+            return f'{ans}\n{right}'
+        elif left != [] and left != None:
+            return f'{ans}\n{left}'
     
     @visitor.when(PrintExprNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__PrintExprNode <expr>'
+        expr = self.visit(node.expr, tabs + 1)
+        if expr != [] and expr != None:
+            return f'{ans}\n{expr}'
+        else:
+            return f'{ans}'
+    
+    @visitor.when(AndNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__AndNode <expr> and <expr>'
+        left = self.visit(node.expr, tabs + 1)
+        right = self.visit(node.expr2, tabs + 1)
+        return f'{ans}\n{left}\n{right}'
+    
+    @visitor.when(OrNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__OrNode <expr> or <expr>'
+        left = self.visit(node.expr, tabs + 1)
+        right = self.visit(node.expr2, tabs + 1)
+        return f'{ans}\n{left}\n{right}'
+    
+    @visitor.when(NotNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__NotNode not <expr>'
         expr = self.visit(node.expr, tabs + 1)
         return f'{ans}\n{expr}'
     
@@ -868,14 +906,22 @@ class FormatVisitor(object):
         decls= self.visit(node.decls, tabs + 1)
         expr_body = self.visit(node.expr_body, tabs + 1)
 
-        return f'{ans}\n{decls}\n{expr_body}'
+        if(decls != [] and decls != None):
+            return f'{ans}\n{decls}\n{expr_body}'
+
+        return f'{ans}\n{expr_body}'
     
     @visitor.when(DestrExprNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__DestrExprNode <expr> = <expr>'
         loc = self.visit(node.loc, tabs + 1)
         expr = self.visit(node.expr, tabs + 1)
-        return f'{ans}\n{loc}\n{expr}'
+        if loc != None and loc != []:
+            if expr != None and expr != []:
+                return f'{ans}\n{loc}\n{expr}'
+            return f'{ans}\n{loc}'
+        elif expr != None and expr != []:
+            return f'{ans}\n{expr}'
     
     @visitor.when(WhileExprNode)
     def visit(self, node, tabs=0):
@@ -1032,6 +1078,68 @@ class FormatVisitor(object):
         factor = self.visit(node.factor, tabs + 1)
         if(factor != [] and factor != None):
             return f'{ans}\n{factor}'
+        
+    @visitor.when(EqualsNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__EqualsNode =='
+        aritm_expr = self.visit(node.aritm_expr, tabs + 1)
+        comp_expr = self.visit(node.comp_expr, tabs + 1)
+        if(aritm_expr != [] and aritm_expr != None):
+            if (comp_expr != [] and comp_expr != None):
+                return f'{ans}\n{aritm_expr}\n{comp_expr}'
+            return f'{ans}\n{aritm_expr}'
+        
+    @visitor.when(NotEqualsNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__NotEqualsNode !='
+        aritm_expr = self.visit(node.aritm_expr, tabs + 1)
+        comp_expr = self.visit(node.comp_expr, tabs + 1)
+        if(aritm_expr != [] and aritm_expr != None):
+            if (comp_expr != [] and comp_expr != None):
+                return f'{ans}\n{aritm_expr}\n{comp_expr}'
+            return f'{ans}\n{aritm_expr}'
+        
+    @visitor.when(LessNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__LessThanNode <'
+        aritm_expr = self.visit(node.aritm_expr, tabs + 1)
+        comp_expr = self.visit(node.comp_expr, tabs + 1)
+        if(aritm_expr != [] and aritm_expr != None):
+            if (comp_expr != [] and comp_expr != None):
+                return f'{ans}\n{aritm_expr}\n{comp_expr}'
+            return f'{ans}\n{aritm_expr}'
+        
+    @visitor.when(GreaterNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__GreaterThanNode >'
+        aritm_expr = self.visit(node.aritm_expr, tabs + 1)
+        comp_expr = self.visit(node.comp_expr, tabs + 1)
+        if(aritm_expr != [] and aritm_expr != None):
+            if (comp_expr != [] and comp_expr != None):
+                return f'{ans}\n{aritm_expr}\n{comp_expr}'
+            return f'{ans}\n{aritm_expr}'
+        
+    @visitor.when(LessEqualsNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__LessEqualNode <='
+        aritm_expr = self.visit(node.aritm_expr, tabs + 1)
+        comp_expr = self.visit(node.comp_expr, tabs + 1)
+        if(aritm_expr != [] and aritm_expr != None):
+            if (comp_expr != [] and comp_expr != None):
+                return f'{ans}\n{aritm_expr}\n{comp_expr}'
+            return f'{ans}\n{aritm_expr}'
+        
+    @visitor.when(GreaterEqualsNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__GreaterEqualNode >='
+        aritm_expr = self.visit(node.aritm_expr, tabs + 1)
+        comp_expr = self.visit(node.comp_expr, tabs + 1)
+        if(aritm_expr != [] and aritm_expr != None):
+            if (comp_expr != [] and comp_expr != None):
+                return f'{ans}\n{aritm_expr}\n{comp_expr}'
+            return f'{ans}\n{aritm_expr}'
+        
+
         
     
     @visitor.when(FactorNode)

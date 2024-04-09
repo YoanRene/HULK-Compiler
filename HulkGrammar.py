@@ -80,9 +80,8 @@ def HulkGrammar():
     inherits_expr %= inherits + id_ + args_in_par  , lambda h,s: InheritsExprNode( s[2], s[3])
     inherits_expr %= G.Epsilon , lambda h,s: InheritsExprNode( None, None)
 
-    #decls_methods_semi %= decls_methods_semi + decl + semi , lambda h,s: s[1] + [s[2]] ##
-    decls_methods_semi %= decls_methods_semi + decl + semi, lambda h,s: s[1] + [s[2]] ##
-    decls_methods_semi %= decls_methods_semi + method , lambda h,s: s[1] + [s[2]] ##
+    decls_methods_semi %= decls_methods_semi + decl + semi, lambda h,s: s[1] + [s[2]] 
+    decls_methods_semi %= decls_methods_semi + method , lambda h,s: s[1] + [s[2]] 
     decls_methods_semi %= G.Epsilon , lambda h,s: []
 
     method %= id_ + opar + params + cpar + id_extend + body , lambda h,s: MethodNode(s[1],s[3],s[5],s[6])
@@ -129,13 +128,13 @@ def HulkGrammar():
     if_expr %= if_ + opar + expr + cpar + expr_body + elif_expr , lambda h,s: IfExprNode(s[3],s[5],s[6])
 
     elif_expr %= elif_ + opar + expr + cpar + expr_body + elif_expr , lambda h,s: ElifExprNode(s[3],s[5],s[6])
-    elif_expr %= else_expr , lambda h,s: s[1] #########################3
+    elif_expr %= else_expr , lambda h,s: s[1] 
 
     else_expr %= else_ + expr_body , lambda h,s: ElseExprNode(s[2])
 
     decl %= id_ + id_extend + asign + expr , lambda h,s: DeclNode(s[1],s[2],s[4])
 
-    decls %= decls + comma + let_optional+ decl , lambda h,s: s[1] + [s[4]] ############
+    decls %= decls + comma + let_optional+ decl , lambda h,s: s[1] + [s[4]] 
     decls %= decl , lambda h,s: [s[1]]
 
     expr_body %= expr  , lambda h,s: ExprBodyNode(s[1])
@@ -168,18 +167,18 @@ def HulkGrammar():
     comp_expr %= comp_expr + less_equals + aritm_expr , lambda h,s: LessEqualsNode(s[1],s[3])
     comp_expr %= aritm_expr , lambda h,s: CompExprNode(s[1],None)
 
-    aritm_expr %= aritm_expr + plus + term , lambda h,s: SumNode(s[1],s[3]) ##seria sum node
-    aritm_expr %= aritm_expr + minus + term , lambda h,s: MinusNode(s[1],s[3]) ##
-    aritm_expr %= term , lambda h,s: AritmExprNode(s[1],None) ##
+    aritm_expr %= aritm_expr + plus + term , lambda h,s: SumNode(s[1],s[3]) 
+    aritm_expr %= aritm_expr + minus + term , lambda h,s: MinusNode(s[1],s[3])
+    aritm_expr %= term , lambda h,s: AritmExprNode(s[1],None)
 
-    term %= term + star + pow_expr , lambda h,s: MultNode(s[1],s[3]) ##
-    term %= term + div + pow_expr , lambda h,s: DivNode(s[1],s[3]) ##
-    term %= term + mod + pow_expr , lambda h,s: ModNode(s[1],s[3]) ##
-    term %= pow_expr , lambda h,s: TermNode(s[1],None) ##
+    term %= term + star + pow_expr , lambda h,s: MultNode(s[1],s[3])
+    term %= term + div + pow_expr , lambda h,s: DivNode(s[1],s[3])
+    term %= term + mod + pow_expr , lambda h,s: ModNode(s[1],s[3])
+    term %= pow_expr , lambda h,s: TermNode(s[1],None)
 
-    pow_expr %= pow_expr + pow_ + negative , lambda h,s: PowExprNode(s[1],s[3]) ##
-    pow_expr %= pow_expr + pow_2 + negative , lambda h,s: PowExprNode(s[1],s[3]) ##
-    pow_expr %= negative , lambda h,s: PowExprNode(s[1],None) ##
+    pow_expr %= pow_expr + pow_ + negative , lambda h,s: PowExprNode(s[1],s[3])
+    pow_expr %= pow_expr + pow_2 + negative , lambda h,s: PowExprNode(s[1],s[3])
+    pow_expr %= negative , lambda h,s: PowExprNode(s[1],None)
 
     negative %= minus + factor , lambda h,s: NegativeNode(s[2], True)
     negative %= factor , lambda h,s: NegativeNode(s[1], False)
