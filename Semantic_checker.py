@@ -1,3 +1,5 @@
+import math
+import random
 from Automata import *
 from Grammar import *
 from Parser import *
@@ -44,13 +46,116 @@ class ProgramNode:
         self.program = program
         self.expr = expr
 
+    # def evaluate(self):
+    #     try :
+    #         return self.program.evaluate()
+    #     except:
+    #         pass
+    #     try :
+    #         return self.expr.evaluate()
+    #     except:
+    #         pass
+
+class SumNode:
+    def __init__(self,aritm_expr,term):
+        self.aritm_expr=aritm_expr
+        self.term=term
+        self.ret_type = "num"
+    
+    # def evaluate(self):
+    #     return self.aritm_expr.evaluate() + self.term.evaluate()
+
+class MinusNode:
+    def __init__(self,aritm_expr,term):
+        self.aritm_expr=aritm_expr
+        self.term=term
+        self.ret_type = "num"
+    
     def evaluate(self):
-        # Implementación de la evaluación del programa
+        return self.aritm_expr.evaluate() - self.term.evaluate()
+
+class MultNode:
+    def __init__(self,term,pow_expr):
+        self.term=term
+        self.pow_expr=pow_expr
+        self.ret_type = "num"
+    
+    def evaluate(self):
+        return self.term.evaluate() * self.pow_expr.evaluate()
+
+class DivNode:
+    def __init__(self,term,pow_expr):
+        self.term=term
+        self.pow_expr=pow_expr
+        self.ret_type = "num"
+    
+    def evaluate(self):
+        return self.term.evaluate() / self.pow_expr.evaluate()
+
+class ModNode:
+    def __init__(self,term,pow_expr):
+        self.term=term
+        self.pow_expr=pow_expr
+        self.ret_type = "num"
+    
+    def evaluate(self):
+        return self.term.evaluate() % self.pow_expr.evaluate()
+
+class MathNode:
+    def __init__(self,expr1,expr2):
+        self.expr1=expr1
+        self.expr2=expr2
+        self.ret_type = "num"
+    
+    def evaluate(self):
         pass
 
+class AndNode:
+    def __init__(self,logic_concat_expr,comp_expr):
+        self.logic_concat_expr=logic_concat_expr
+        self.comp_expr=comp_expr
+        self.ret_type = "bool"
+    
+    def evaluate(self):
+        return self.logic_concat_expr.evaluate() and self.comp_expr.evaluate()
+
+class OrNode:
+    def __init__(self,logic_concat_expr,comp_expr):
+        self.logic_concat_expr=logic_concat_expr
+        self.comp_expr=comp_expr
+        self.ret_type = "bool"
+    
+    def evaluate(self):
+        return self.logic_concat_expr.evaluate() or self.comp_expr.evaluate()
+
+class NotNode:
+    def __init__(self,comp_expr):
+        self.comp_expr=comp_expr
+        self.ret_type = "bool"
+    
+    def evaluate(self):
+        return not self.comp_expr.evaluate()
+
+class BlockExprListNode:
+    def __init__(self, block_expr_list,expr):
+        self.block_expr_list = block_expr_list
+        self.expr = expr
+
+    def evaluate(self):
+        # Implementación de la evaluación de la lista de bloques de expresiones
+        pass
+
+class LetOptionalNode:
+    def __init__(self, let_optional):
+        self.let_optional = let_optional
+
+    def evaluate(self):
+        # Implementación de la evaluación de la opción de let
+        pass
+
+
 class FunctionStatNode:
-    def __init__(self, function_, id_, params, id_extend, body):
-        self.function_ = function_
+    def __init__(self,id_, params, id_extend, body):
         self.id_ = id_
         self.params = params
         self.id_extend = id_extend
@@ -61,8 +166,7 @@ class FunctionStatNode:
         pass
 
 class TypeStatNode:
-    def __init__(self, type_, id_, params_in_par, inherits_expr, decls_methods_semi):
-        self.type_ = type_
+    def __init__(self, id_, params_in_par, inherits_expr, decls_methods_semi):
         self.id_ = id_
         self.params_in_par = params_in_par
         self.inherits_expr = inherits_expr
@@ -73,8 +177,7 @@ class TypeStatNode:
         pass
 
 class ProtocolStatNode:
-    def __init__(self, protocol, id_, extends_expr, method_protocol_list):
-        self.protocol = protocol
+    def __init__(self, id_, extends_expr, method_protocol_list):
         self.id_ = id_
         self.extends_expr = extends_expr
         self.method_protocol_list = method_protocol_list
@@ -105,8 +208,7 @@ class MethodNode:
         pass
 
 class ExtendsExprNode:
-    def __init__(self, extends, id_):
-        self.extends = extends
+    def __init__(self, id_):
         self.id_ = id_
 
     def evaluate(self):
@@ -114,8 +216,7 @@ class ExtendsExprNode:
         pass
 
 class InheritsExprNode:
-    def __init__(self, inherits, id_, args_in_par):
-        self.inherits = inherits
+    def __init__(self, id_, args_in_par):
         self.id_ = id_
         self.args_in_par = args_in_par
 
@@ -140,9 +241,10 @@ class ParamsNode:
         pass
 
 class ParamsAuxNode:
-    def __init__(self, id_, type_):
+    def __init__(self,params_aux, id_, id_extend):
+        self.params_aux=params_aux
         self.id_ = id_
-        self.type_ = type_
+        self.id_extend = id_extend
 
     def evaluate(self):
         # Implementación de la evaluación de los parámetros auxiliares
@@ -166,8 +268,7 @@ class ExprNode:
         pass
 
 class InstExprNode:
-    def __init__(self, new_, id_, args):
-        self.new_ = new_
+    def __init__(self, id_, args):
         self.id_ = id_
         self.args = args
 
@@ -176,8 +277,7 @@ class InstExprNode:
         pass
 
 class ArrayExprNode:
-    def __init__(self, new_, id_, expr):
-        self.new_ = new_
+    def __init__(self, id_, expr):
         self.id_ = id_
         self.expr = expr
 
@@ -189,6 +289,7 @@ class PrintExprNode:
     def __init__(self, print_, expr):
         self.print_ = print_
         self.expr = expr
+        self.ret_type = "str"
 
     def evaluate(self):
         # Implementación de la evaluación de la expresión de impresión
@@ -198,6 +299,7 @@ class LetExprNode:
     def __init__(self, decls,expr_body):
         self.decls = decls
         self.expr_body = expr_body
+        self.ret_type = "let"
 
     def evaluate(self):
         # Implementación de la evaluación de la expresión de declaración
@@ -207,6 +309,7 @@ class DestrExprNode:
     def __init__(self, loc, expr):
         self.loc = loc
         self.expr = expr
+        self.ret_type = "destr"
 
     def evaluate(self):
         # Implementación de la evaluación de la expresión de destrucción
@@ -304,9 +407,18 @@ class IdExtendNode:
         pass
 
 class ExprElemNode:
-    def __init__(self, expr_elem, as_expr):
+    def __init__(self, expr_elem, as_expr, is_expr):
         self.expr_elem = expr_elem
         self.as_expr = as_expr
+        self.is_expr = is_expr
+
+        if(is_expr):
+            self.ret_type = "bool"
+        else:
+            try: 
+                self.ret_type = as_expr.ret_type
+            except:
+                self.ret_type = expr_elem.ret_type
 
     def evaluate(self):
         # Implementación de la evaluación del elemento de expresión
@@ -316,69 +428,156 @@ class AsExprNode:
     def __init__(self, as_expr, logic_concat_expr):
         self.as_expr = as_expr
         self.logic_concat_expr = logic_concat_expr
+        try:
+            self.ret_type = logic_concat_expr.ret_type
+        except:
+            self.ret_type = as_expr.ret_type
 
     def evaluate(self):
         # Implementación de la evaluación de la expresión de conversión de tipo
         pass
 
 class LogicConcatExprNode:
-    def __init__(self, logic_concat_expr, comp_expr):
+    def __init__(self, logic_concat_expr, comp_expr, arroba_type):
         self.logic_concat_expr = logic_concat_expr
         self.comp_expr = comp_expr
+        self.arroba_type = arroba_type
+        try:
+            self.ret_type = comp_expr.ret_type
+        except:
+            self.ret_type = logic_concat_expr.ret_type
 
     def evaluate(self):
-        # Implementación de la evaluación de la expresión de concatenación lógica
-        pass
+        if(self.arroba_type != None):
+            if(self.arroba_type == "@"):
+                return self.logic_concat_expr.evaluate() + self.comp_expr.evaluate()
+            else:
+                return self.logic_concat_expr.evaluate() + " " + self.comp_expr.evaluate()
+        else:
+            return self.comp_expr.evaluate()
 
 class CompExprNode:
     def __init__(self, comp_expr, aritm_expr):
         self.comp_expr = comp_expr
         self.aritm_expr = aritm_expr
+        try:
+            self.ret_type = aritm_expr.ret_type ###################
+        except:
+            self.ret_type = comp_expr.ret_type
 
     def evaluate(self):
-        # Implementación de la evaluación de la expresión de comparación
-        pass
+       return self.aritm_expr.evaluate()
+        
+
+class EqualsNode:
+    def __init__(self, comp_expr, aritm_expr):
+        self.comp_expr = comp_expr
+        self.aritm_expr = aritm_expr
+        self.ret_type = "bool"
+
+    def evaluate(self):
+        return self.comp_expr.evaluate() == self.aritm_expr.evaluate()
+
+class NotEqualsNode:
+    def __init__(self, comp_expr, aritm_expr):
+        self.comp_expr = comp_expr
+        self.aritm_expr = aritm_expr
+        self.ret_type = "bool"
+
+    def evaluate(self):
+        # Implementación de la evaluación de la expresión de igualdad
+        return self.comp_expr.evaluate() != self.aritm_expr.evaluate()
+
+class LessNode:
+    def __init__(self, comp_expr, aritm_expr):
+        self.comp_expr = comp_expr
+        self.aritm_expr = aritm_expr
+        self.ret_type = "bool"
+
+    def evaluate(self):
+        return self.comp_expr.evaluate() < self.aritm_expr.evaluate()
+
+class GreaterNode:
+    def __init__(self, comp_expr, aritm_expr):
+        self.comp_expr = comp_expr
+        self.aritm_expr = aritm_expr
+        self.ret_type = "bool"
+
+    def evaluate(self):
+        return self.comp_expr.evaluate() > self.aritm_expr.evaluate()
+
+class LessEqualsNode:
+    def __init__(self, comp_expr, aritm_expr):
+        self.comp_expr = comp_expr
+        self.aritm_expr = aritm_expr
+        self.ret_type = "bool"
+
+    def evaluate(self):
+        return self.comp_expr.evaluate() <= self.aritm_expr.evaluate()
+
+class GreaterEqualsNode:
+    def __init__(self, comp_expr, aritm_expr):
+        self.comp_expr = comp_expr
+        self.aritm_expr = aritm_expr
+        self.ret_type = "bool"
+
+    def evaluate(self):
+        return self.comp_expr.evaluate() >= self.aritm_expr.evaluate()
 
 class AritmExprNode:
     def __init__(self, aritm_expr, term):
         self.aritm_expr = aritm_expr
         self.term = term
+        self.ret_type = aritm_expr.ret_type #####################
 
     def evaluate(self):
-        # Implementación de la evaluación de la expresión aritmética
-        pass
+        return self.aritm_expr.evaluate()
 
 class TermNode:
     def __init__(self, term, pow_expr):
         self.term = term
         self.pow_expr = pow_expr
+        try:
+            self.ret_type = pow_expr.ret_type
+        except:
+            self.ret_type = term.ret_type
 
     def evaluate(self):
-        # Implementación de la evaluación del término aritmético
-        pass
+        return self.term.evaluate()
 
 class PowExprNode:
     def __init__(self, pow_expr, negative):
         self.pow_expr = pow_expr
         self.negative = negative
+        try: 
+            self.ret_type = negative.ret_type
+        except:
+            self.ret_type = pow_expr.ret_type
 
     def evaluate(self):
-        # Implementación de la evaluación de la expresión de potencia
-        pass
+        if(self.pow_expr != None):
+            return self.pow_expr.evaluate() ** self.negative.evaluate()
+        else:
+            return self.negative.evaluate()
 
 class NegativeNode:
-    def __init__(self, factor):
+    def __init__(self, factor, is_negative):
         self.factor = factor
+        self.is_negative = is_negative
+        self.ret_type = factor.ret_type
 
     def evaluate(self):
-        # Implementación de la evaluación de la expresión negativa
-        pass
+        if(self.is_negative):
+            return -self.factor.evaluate()
+        else:
+            return self.factor.evaluate()
 
 class FactorNode:
     def __init__(self, expr, params_aux,expr2):
         self.expr = expr
         self.params_aux = params_aux
         self.expr2 = expr2
+        self.ret_type = expr.ret_type
 
     def evaluate(self):
         # Implementación de la evaluación del factor de expresión
@@ -389,6 +588,7 @@ class LocNode:
         self.loc = loc
         self.id_ = id_
         self.args_in_par = args_in_par
+        self.ret_type = "str"
 
     def evaluate(self):
         # Implementación de la evaluación de la ubicación
@@ -412,11 +612,65 @@ class ArgsAuxNode:
         pass
 
 class ArgsInParNode:
-    def __init__(self, args):
+    def __init__(self, args, is_args_in_par):
         self.args = args
+        self.is_args_in_par = is_args_in_par
 
     def evaluate(self):
         # Implementación de la evaluación de los argumentos entre paréntesis
+        pass
+
+class NumNode: 
+    def __init__(self, value,value2, math_func):
+        self.value= value
+        self.value2= value2
+        self.math_func = math_func
+        self.ret_type = "num"
+
+
+    def evaluate(self):
+        if(self.math_func != None):
+            if(self.math_func == "sin"):
+                return math.sin(int(self.value))
+            elif(self.math_func == "cos"):
+                return math.cos(int(self.value))
+            elif(self.math_func == "sqrt"):
+                return math.sqrt(int(self.value))
+            elif(self.math_func == "log"):
+                return math.log(int(self.value),int(self.value2))
+            elif(self.math_func == "exp"):
+                return math.exp(int(self.value))
+            elif(self.math_func == "rand"):
+                return random.randint()####
+        else: 
+            return int(self.value)
+        
+class BoolNode:
+    def __init__(self, value):
+        self.value= value
+        self.ret_type = "bool"
+
+    def evaluate(self):
+        # Implementación de la evaluación del booleano
+        pass
+
+class StrNode:
+    def __init__(self, value):
+        self.value= value
+        self.ret_type = "str"
+
+    def evaluate(self):
+        return self.value
+
+class VectorNode:
+    def __init__(self, expr, params_aux, expr2):
+        self.expr = expr
+        self.params_aux = params_aux
+        self.expr2 = expr2
+        self.ret_type = "vector"
+
+    def evaluate(self):
+        # Implementación de la evaluación del vector
         pass
 
 #endregion
@@ -429,15 +683,546 @@ class FormatVisitor(object):
     @visitor.when(ProgramNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__ProgramNode [<stat>; ... <stat>;]'
-        statements = '\n'.join(self.visit(child, tabs + 1) for child in node.statements)
-        return f'{ans}\n{statements}'
+        expr = self.visit(node.expr, tabs + 1)
+        return f'{ans}\n{expr}'
+    
+    @visitor.when(SumNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__SumNode <expr> + <expr>'
+        left = self.visit(node.aritm_expr, tabs + 1)
+        right = self.visit(node.term, tabs + 1)
+        return f'{ans}\n{left}\n{right}'
+    
+    @visitor.when(MinusNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__MinusNode <expr> - <expr>'
+        left = self.visit(node.aritm_expr, tabs + 1)
+        right = self.visit(node.term, tabs + 1)
+        if(right !=[] and right!=None):
+            return f'{ans}\n{left}\n{right}'
+        else:
+            return f'{ans}\n{left}'
+    
+    @visitor.when(MultNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__MultNode <expr> * <expr>'
+        left = self.visit(node.term, tabs + 1)
+        right = self.visit(node.pow_expr, tabs + 1)
+
+        if(right !=[] and right!=None):
+            if left != [] and left != None:
+                return f'{ans}\n{left}\n{right}'
+            return f'{ans}\n{right}'
+        return f'{ans}'
+    
+    @visitor.when(DivNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__DivNode <expr> / <expr>'
+        left = self.visit(node.term, tabs + 1)
+        right = self.visit(node.pow_expr, tabs + 1)
+        if(right !=[] and right!=None):
+            if left != [] and left != None:
+                return f'{ans}\n{left}\n{right}'
+            return f'{ans}\n{right}'
+        return f'{ans}'
+    
+    @visitor.when(ModNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ModNode <expr> % <expr>'
+        left = self.visit(node.term, tabs + 1)
+        right = self.visit(node.pow_expr, tabs + 1)
+        if(right !=[] and right!=None):
+            if left != [] and left != None:
+                return f'{ans}\n{left}\n{right}'
+            return f'{ans}\n{right}'
+        elif left != [] and left != None:
+            return f'{ans}\n{left}'
     
     @visitor.when(PrintExprNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__PrintExprNode <expr>'
         expr = self.visit(node.expr, tabs + 1)
+        if expr != [] and expr != None:
+            return f'{ans}\n{expr}'
+        else:
+            return f'{ans}'
+    
+    @visitor.when(AndNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__AndNode <expr> and <expr>'
+        left = self.visit(node.comp_expr, tabs + 1)
+        right = self.visit(node.logic_concat_expr, tabs + 1)
+        if right != [] and right != None:
+            if left != [] and left != None:
+                return f'{ans}\n{left}\n{right}'
+            return f'{ans}\n{right}'
+        elif left != [] and left != None:
+            return f'{ans}\n{left}'
+    
+    @visitor.when(OrNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__OrNode <expr> or <expr>'
+        left = self.visit(node.comp_expr, tabs + 1)
+        right = self.visit(node.logic_concat_expr, tabs + 1)
+        if right != [] and right != None:
+            if left != [] and left != None:
+                return f'{ans}\n{left}\n{right}'
+            return f'{ans}\n{right}'
+        elif left != [] and left != None:
+            return f'{ans}\n{left}'
+    
+    @visitor.when(NotNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__NotNode not <expr>'
+        expr = self.visit(node.expr, tabs + 1)
         return f'{ans}\n{expr}'
     
+    @visitor.when(DeclsNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__DeclsNode'
+        decls = self.visit(node.decls, tabs + 1)
+        decl=self.visit(node.decl, tabs + 1)
+        return f'{ans}\n{decls}\n{decl}'
+    
+    @visitor.when(DeclNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__DeclNode <id> : <type>'
+        id= self.visit(node.id_, tabs + 1)
+        id_extend = self.visit(node.id_extend, tabs + 1)
+        expr = self.visit(node.expr, tabs + 1)
+        
+        return f'{ans}\n{id}\n{id_extend}\n{expr}'
+    
+    @visitor.when(FunctionStatNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__FunctionStatNode <id> (<params>) : <type> <block>'
+        id = node.id_
+        params = self.visit(node.params, tabs + 1)
+        id_extend = self.visit(node.id_extend, tabs + 1)
+        body = self.visit(node.body, tabs + 1)
+
+        if(id_extend !=[] and id_extend != None):
+            if id != None :
+                return f'{ans}\n{id}\n{params}\n{id_extend}\n{body}'
+            else:
+                return f'{ans}\n{params}\n{id_extend}\n{body}'
+        elif id != None:
+            return f'{ans}\n{id}\n{params}\n{body}'
+        else:
+            return f'{ans}\n{params}\n{body}'
+
+    
+    @visitor.when(TypeStatNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__TypeStatNode <id> : <type>'
+        id = self.visit(node.id_, tabs + 1)
+        params_in_par = self.visit(node.params_in_par, tabs + 1)
+        inherits_expr = self.visit(node.inherits_expr, tabs + 1)
+        decls_methods_semi = self.visit(node.decls_methods_semi, tabs + 1)
+
+        return f'{ans}\n{id}\n{params_in_par}\n{inherits_expr}\n{decls_methods_semi}'
+    
+    @visitor.when(ProtocolStatNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ProtocolStatNode <id> : <type>'
+        id = self.visit(node.id_, tabs + 1)
+        extends_expr = self.visit(node.extends_expr, tabs + 1)
+        method_protocol_list= self.visit(node.method_protocol_list, tabs + 1)
+
+        return f'{ans}\n{id}\n{extends_expr}\n{method_protocol_list}'
+    
+    @visitor.when(MethodProtocolNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__MethodProtocolNode <id> (<params>) : <type>'
+        id = self.visit(node.id_, tabs + 1)
+        params = self.visit(node.params, tabs + 1)
+        id_extend = self.visit(node.id_extend, tabs + 1)
+        return f'{ans}\n{id}\n{params}\n{id_extend}'
+    
+    @visitor.when(ExtendsExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ExtendsExprNode <id>'
+        id = self.visit(node.id_, tabs + 1)
+        return f'{ans}\n{id}'
+
+
+    @visitor.when(InheritsExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__InheritsExprNode <id>'
+        id = self.visit(node.id_, tabs + 1)
+        args_in_par = self.visit(node.args_in_par, tabs + 1)
+        return f'{ans}\n{id}\n{args_in_par}'
+    
+    @visitor.when(MethodNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__MethodNode <id> (<params>) : <type> <block>'
+        id = self.visit(node.id_, tabs + 1)
+        params = self.visit(node.params, tabs + 1)
+        id_extend = self.visit(node.id_extend, tabs + 1)
+        body = self.visit(node.body, tabs + 1)
+        return f'{ans}\n{id}\n{params}\n{id_extend}\n{body}'
+    
+    @visitor.when(BodyNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__BodyNode <expr>; ... <expr>;'
+        expr = self.visit(node.expr, tabs + 1)
+        return f'{ans}\n{expr}'
+    
+    @visitor.when(ParamsAuxNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ParamsAuxNode <id> :'
+        id = node.id_
+        id_extend = self.visit(node.id_extend, tabs + 1)
+        if(id_extend != [] and id_extend != None):
+            return f'{ans}\n{id},{id_extend}'
+        else:
+            return f'{ans} {id}'
+    
+    @visitor.when(ParamsNode) #######################
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ParamsNode <id> : <type>'
+        string=""
+        for param in node.params_aux:
+            x= self.visit(param, tabs + 1)
+            if x != []:
+                string += self.visit(param, tabs + 1)+","
+        if(string != ""):
+            params_aux = string[:-1]
+            return f'{ans}\n{params_aux}'
+    
+    @visitor.when(ParamsInParNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ParamsInParNode <id> : <type>'
+        params= self.visit(node.params, tabs + 1)
+        return f'{ans}\n{params}'
+    
+    @visitor.when(InstExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__InstExprNode <id>'
+        id = self.visit(node.id_, tabs + 1)
+        args= self.visit(node.args, tabs + 1)
+        return f'{ans}\n{id}\n{args}'
+    
+    @visitor.when(ArrayExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ArrayExprNode <expr>'
+        id= self.visit(node.id_, tabs + 1)
+        expr = self.visit(node.expr, tabs + 1)
+        return f'{ans}\n{id}\n{expr}'
+    
+    @visitor.when(LetExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__LetExprNode <id> : <type> = <expr> in <expr>' ##############
+        decls= self.visit(node.decls, tabs + 1)
+        expr_body = self.visit(node.expr_body, tabs + 1)
+
+        if(decls != [] and decls != None):
+            return f'{ans}\n{decls}\n{expr_body}'
+
+        return f'{ans}\n{expr_body}'
+    
+    @visitor.when(DestrExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__DestrExprNode <expr> = <expr>'
+        loc = self.visit(node.loc, tabs + 1)
+        expr = self.visit(node.expr, tabs + 1)
+        if loc != None and loc != []:
+            if expr != None and expr != []:
+                return f'{ans}\n{loc}\n{expr}'
+            return f'{ans}\n{loc}'
+        elif expr != None and expr != []:
+            return f'{ans}\n{expr}'
+    
+    @visitor.when(WhileExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__WhileExprNode <expr> = <expr_body>'
+        expr= self.visit(node.expr, tabs + 1)
+        expr_body = self.visit(node.expr_body, tabs + 1)
+
+        return f'{ans}\n{expr}\n{expr_body}'
+    
+    @visitor.when(ForExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ForExprNode <id> = <expr> <expr_body>'
+        id = self.visit(node.id_, tabs + 1)
+        expr = self.visit(node.expr, tabs + 1)
+        expr_body = self.visit(node.expr_body, tabs + 1)
+        return f'{ans}\n{id}\n{expr}\n{expr_body}'
+    
+    @visitor.when(IfExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__IfExprNode <expr> <expr_body> elif <expr>'
+        expr = self.visit(node.expr, tabs + 1)
+        expr_body = self.visit(node.expr_body, tabs + 1)
+        elif_expr = self.visit(node.elif_expr, tabs + 1)
+        return f'{ans}\n{expr}\n{expr_body}\n{elif_expr}'
+    
+    @visitor.when(ElifExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ElifExprNode <expr> <expr_body> <elif_expr>'
+        expr = self.visit(node.expr, tabs + 1)
+        expr_body = self.visit(node.expr_body, tabs + 1)
+        elif_expr = self.visit(node.elif_expr, tabs + 1)
+        return f'{ans}\n{expr}\n{expr_body}\n{elif_expr}'
+    
+    @visitor.when(ElseExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ElseExprNode <expr_body>'
+        expr_body = self.visit(node.expr_body, tabs + 1)
+        return f'{ans}\n{expr_body}'
+    
+    @visitor.when(DeclNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__DeclNode <id> : <type> = <expr>'
+        id = self.visit(node.id_, tabs + 1)
+        id_extend = self.visit(node.id_extend, tabs + 1)
+        expr = self.visit(node.expr, tabs + 1)
+        return f'{ans}\n{id}\n{id_extend}\n{expr}'
+    
+    @visitor.when(ExprBodyNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ExprBodyNode <expr>'
+        expr = self.visit(node.expr, tabs + 1)
+        return f'{ans}\n{expr}'
+    
+    @visitor.when(ExprListSemiNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ExprListSemiNode <expr> <expr_list>'
+        expr_list_semi = self.visit(node.expr_list_semi, tabs + 1)
+        expr = self.visit(node.expr, tabs + 1)
+        return f'{ans}\n{expr_list_semi}\n{expr}'
+    
+    @visitor.when(IdExtendNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__IdExtendNode <id> <id_extend>'
+        if (node.id_!=None):
+            return f'{ans}\n{node.id_}'
+    
+    @visitor.when(ExprElemNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ExprElemNode <expr> <expr_elem>'
+        expr_elem = self.visit(node.expr_elem, tabs + 1)
+        as_expr = self.visit(node.as_expr, tabs + 1)
+        if(expr_elem != [] and expr_elem != None):
+            if(as_expr != [] and as_expr != None):
+                return f'{ans}\n{expr_elem}\n{as_expr}'
+            return f'{ans}\n{expr_elem}'
+        elif as_expr != [] and as_expr != None:
+            return f'{ans}\n{as_expr}'
+    
+    @visitor.when(AsExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__AsExprNode <expr>'
+        as_expr = self.visit(node.as_expr, tabs + 1)
+        logic_concat_expr = self.visit(node.logic_concat_expr, tabs + 1)
+
+        if(as_expr != [] and as_expr != None):
+            if (logic_concat_expr != [] and logic_concat_expr != None):
+                return f'{ans}\n{as_expr}\n{logic_concat_expr}'
+            return f'{ans}\n{as_expr}'
+        elif logic_concat_expr != [] and logic_concat_expr != None:
+            return f'{ans}\n{logic_concat_expr}'
+    
+    @visitor.when(LogicConcatExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__LogicConcatExprNode <expr> <logic_concat_expr>'
+        logic_concat_expr = self.visit(node.logic_concat_expr, tabs + 1)
+        comp_expr = self.visit(node.comp_expr, tabs + 1)
+        if(logic_concat_expr != [] and logic_concat_expr != None):
+            if (comp_expr != [] and comp_expr != None):
+                return f'{ans}\n{logic_concat_expr}\n{comp_expr}'
+            return f'{ans}\n{logic_concat_expr}'
+        elif comp_expr != [] and comp_expr != None:
+            return f'{ans}\n{comp_expr}'
+    
+    @visitor.when(CompExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__CompExprNode <expr> <comp_expr>'
+        comp_expr = self.visit(node.comp_expr, tabs + 1)
+        aritm_expr = self.visit(node.aritm_expr, tabs + 1)
+        if(comp_expr != [] and comp_expr != None):
+            if (aritm_expr != [] and aritm_expr != None):
+                return f'{ans}\n{comp_expr}\n{aritm_expr}'
+            return f'{ans}\n{comp_expr}'
+        elif aritm_expr != [] and aritm_expr != None:
+            return f'{ans}\n{aritm_expr}'
+    
+    @visitor.when(AritmExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__AritmExprNode <expr> <aritm_expr>'
+        aritm_expr = self.visit(node.aritm_expr, tabs + 1)
+        term = self.visit(node.term, tabs + 1)
+
+        if(aritm_expr != [] and aritm_expr != None):
+            if (term != [] and term != None):
+                return f'{ans}\n{aritm_expr}\n{term}'
+            return f'{ans}\n{aritm_expr}'
+        elif term != [] and term != None:
+            return f'{ans}\n{term}'
+    
+    @visitor.when(TermNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__TermNode <expr> <term>'
+        term = self.visit(node.term, tabs + 1)
+        pow_expr = self.visit(node.pow_expr, tabs + 1)
+        if( pow_expr != [] and pow_expr != None):
+            if(term != [] and term != None):
+                return f'{ans}\n{term}\n{pow_expr}'
+            return f'{ans}\n{pow_expr}'
+        elif term != [] and term != None:
+            return f'{ans}\n{term}'
+    
+    @visitor.when(PowExprNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__PowExprNode <expr> <pow_expr>'
+        pow_expr = self.visit(node.pow_expr, tabs + 1)
+        negative = self.visit(node.negative, tabs + 1)
+        if(negative!=[] and negative!=None):
+            return f'{ans}\n{pow_expr}\n{negative}'
+        elif pow_expr != [] and pow_expr != None:
+            return f'{ans}\n{pow_expr}'
+    
+    @visitor.when(NegativeNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__NegativeNode <expr>'
+        factor = self.visit(node.factor, tabs + 1)
+        if(factor != [] and factor != None):
+            return f'{ans}\n{factor}'
+        
+    @visitor.when(EqualsNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__EqualsNode =='
+        aritm_expr = self.visit(node.aritm_expr, tabs + 1)
+        comp_expr = self.visit(node.comp_expr, tabs + 1)
+        if(aritm_expr != [] and aritm_expr != None):
+            if (comp_expr != [] and comp_expr != None):
+                return f'{ans}\n{aritm_expr}\n{comp_expr}'
+            return f'{ans}\n{aritm_expr}'
+        
+    @visitor.when(NotEqualsNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__NotEqualsNode !='
+        aritm_expr = self.visit(node.aritm_expr, tabs + 1)
+        comp_expr = self.visit(node.comp_expr, tabs + 1)
+        if(aritm_expr != [] and aritm_expr != None):
+            if (comp_expr != [] and comp_expr != None):
+                return f'{ans}\n{aritm_expr}\n{comp_expr}'
+            return f'{ans}\n{aritm_expr}'
+        
+    @visitor.when(LessNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__LessThanNode <'
+        aritm_expr = self.visit(node.aritm_expr, tabs + 1)
+        comp_expr = self.visit(node.comp_expr, tabs + 1)
+        if(aritm_expr != [] and aritm_expr != None):
+            if (comp_expr != [] and comp_expr != None):
+                return f'{ans}\n{aritm_expr}\n{comp_expr}'
+            return f'{ans}\n{aritm_expr}'
+        
+    @visitor.when(GreaterNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__GreaterThanNode >'
+        aritm_expr = self.visit(node.aritm_expr, tabs + 1)
+        comp_expr = self.visit(node.comp_expr, tabs + 1)
+        if(aritm_expr != [] and aritm_expr != None):
+            if (comp_expr != [] and comp_expr != None):
+                return f'{ans}\n{aritm_expr}\n{comp_expr}'
+            return f'{ans}\n{aritm_expr}'
+        
+    @visitor.when(LessEqualsNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__LessEqualNode <='
+        aritm_expr = self.visit(node.aritm_expr, tabs + 1)
+        comp_expr = self.visit(node.comp_expr, tabs + 1)
+        if(aritm_expr != [] and aritm_expr != None):
+            if (comp_expr != [] and comp_expr != None):
+                return f'{ans}\n{aritm_expr}\n{comp_expr}'
+            return f'{ans}\n{aritm_expr}'
+        
+    @visitor.when(GreaterEqualsNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__GreaterEqualNode >='
+        aritm_expr = self.visit(node.aritm_expr, tabs + 1)
+        comp_expr = self.visit(node.comp_expr, tabs + 1)
+        if(aritm_expr != [] and aritm_expr != None):
+            if (comp_expr != [] and comp_expr != None):
+                return f'{ans}\n{aritm_expr}\n{comp_expr}'
+            return f'{ans}\n{aritm_expr}'
+        
+
+        
+    
+    @visitor.when(FactorNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__FactorNode'
+        expr = self.visit(node.expr, tabs + 1)
+        # params_aux = self.visit(node.params_aux, tabs + 1)
+        # expr2 = self.visit(node.expr2, tabs + 1)
+        if(expr != [] and expr != None):
+            return f'{ans}\n{expr}'
+    
+    @visitor.when(LocNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__LocNode <expr>'
+        loc = self.visit(node.loc, tabs + 1)
+        id= self.visit(node.id_, tabs + 1)
+        args_in_par = self.visit(node.args_in_par, tabs + 1)
+        if loc != []:
+            if id != []:
+                if args_in_par != []:
+                    return f'{ans}\n{loc}\n{id}\n{args_in_par}'
+                else:
+                    return f'{ans}\n{loc}\n{args_in_par}'
+            return f'{ans}\n{loc}'
+        elif id != []:
+            if args_in_par != []:
+                return f'{ans}\n{id}\n{args_in_par}'
+            return f'{ans}\n{args_in_par}'
+        elif args_in_par != [] and args_in_par != None:
+            return f'{ans}\n{args_in_par}'
+    
+    @visitor.when(ArgsAuxNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ArgsAuxNode <expr> <args_aux>'
+        args_aux = self.visit(node.args_aux, tabs + 1)
+        expr = self.visit(node.expr, tabs + 1)
+        if(expr != []):
+            return f'{ans}\n{args_aux}\n{expr}'
+        else:
+            return f'{ans}\n{args_aux}'
+    
+    @visitor.when(ArgsNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ArgsNode <expr>'
+        args_aux = self.visit(node.args_aux, tabs + 1)
+
+        return f'{ans}\n{args_aux}'
+    
+    @visitor.when(ArgsInParNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__ArgsInParNode <expr>'
+        args = self.visit(node.args, tabs + 1)
+        if(args != []):
+            return f'{ans}\n{args}'
+    
+    @visitor.when(NumNode)
+    def visit(self, node, tabs=0):
+        if(node.math_func != None):
+            value=self.visit(node.value, tabs + 1)
+            if value != [] and value != None:
+                return '\t' * tabs + f'\\__NumNode: {node.math_func} {value}'
+            return '\t' * tabs + f'\\__NumNode: {node.math_func}'
+        return '\t' * tabs + f'\\__NumNode: {node.value}'
+    
+    @visitor.when(BoolNode)
+    def visit(self, node, tabs=0):
+        return '\t' * tabs + f'\\__BoolNode: {node.value}'
+    
+    @visitor.when(StrNode)
+    def visit(self, node, tabs=0):
+        return '\t' * tabs + f'\\__StrNode: {node.value}'
+    
+
     # @visitor.when(VarDeclarationNode)
     # def visit(self, node, tabs=0):
     #     ans = '\t' * tabs + f'\\__VarDeclarationNode: let {node.id} = <expr>'
@@ -482,6 +1267,16 @@ class Scope:
     def __init__(self, parent=None):
         self.local_vars = []
         self.local_funcs = []
+
+        #las nuevas para la evaluacion
+        self.variables = {}
+        self.variables_extends = {}
+        self.functions = {}
+        self.functions_extends = {}
+        self.protocols = {}
+        self.protocols_extends = {}
+        self.types = {}
+
         self.parent = parent
         self.children = []
         self.var_index_at_parent = 0 if parent is None else len(parent.local_vars)
@@ -497,6 +1292,8 @@ class Scope:
             return False
         self.local_vars.append(VariableInfo(vname))
         return True
+    
+
     
     def define_function(self, fname, params):
         if self.is_local_func(fname,len(params)):
@@ -526,11 +1323,489 @@ class Scope:
         for func_info in self.local_funcs:
             if fname == func_info.name and n == len(func_info.params):
                 return func_info
-        return None       
+        return None  
+    
+    #funciones nuevas
+    def insert_variable(self, var_name, var_value):
+        self.variables[var_name] = var_value
+
+    def get_variable(self, var_name):
+        return self.variables[var_name]
+    
+    def insert_function(self, fun_name, fun_params, fun_extends, fun_body):
+        self.functions[fun_name] = (fun_params, fun_extends, fun_body)
+        self.functions_extends[fun_name] = fun_extends
+    
+    def get_function(self, fun_name):
+        return self.functions[fun_name]
+    
+    def insert_type(self, type_name, type_params, type_inherits, type_decls_met):
+        self.types[type_name] = (type_params, type_inherits, type_decls_met)
+    
+    def get_type(self, type_name):
+        return self.types[type_name]
+    
+    def insert_protocol(self, protocol_name, protocol_extends, protocol_method_list):
+        self.protocols[protocol_name] = (protocol_extends, protocol_method_list)
+        self.protocols_extends[protocol_name] = protocol_extends
+
+    def get_protocol(self, protocol_name):
+        return self.protocols[protocol_name]
 
 class SemanticCheckerVisitor(object):
     def __init__(self):
         self.errors = []
+    
+    @visitor.on('node')
+    def visit(self, node, scope):
+        pass
+
+    ##################Parte de nosotros
+
+    @visitor.when(ProgramNode)
+    def visit(self, node, scope=None):
+        if scope is None:
+            scope = Scope()
+        self.visit(node.expr, scope)
+        self.visit(node.program, scope)
+        return self.errors
+
+    @visitor.when(FunctionStatNode)
+    def visit(self, node, scope):
+        if not scope.define_function(node.id_, node.params.params_aux):###########
+            self.errors.append(f'Function {node.id} is already defined in current scope.')
+        inner_scope = scope.create_child_scope()
+        for param in node.params.params_aux:
+            if not inner_scope.define_variable(param):
+                self.errors.append(f'Function {node.id_} is invalid, its arguments have to be different from each other.')
+        self.visit(node.body, inner_scope)
+
+    @visitor.when(TypeStatNode)
+    def visit(self, node, scope):
+        if not scope.define_variable(node.id_):
+            self.errors.append(f'Variable {node.id_} is already defined in current scope.')
+        
+        if not scope.is_var_defined(node.inherits_expr):
+            self.errors.append(f'Variable {node.inherits_expr} is not defined in current scope.')###############
+        
+        inner_scope = scope.create_child_scope()
+        if(node.params_in_par.params != None):
+            for param in node.params_in_par.params.params_aux:
+                if not inner_scope.define_variable(param):
+                    self.errors.append(f'Function {node.id_} is invalid, its arguments have to be different from each other.')
+
+        
+        self.visit(node.decls_methods_semi, inner_scope)
+
+    @visitor.when(ProtocolStatNode)
+    def visit(self, node, scope):
+        if not scope.define_variable(node.id_):
+            self.errors.append(f'Variable {node.id_} is already defined in current scope.')
+        if node.extends_expr.id_ != None and not scope.is_var_defined(node.extends_expr):
+            self.errors.append(f'Variable {node.extends_expr} is not defined in current scope.')
+        inner_scope = scope.create_child_scope()
+
+        self.visit(node.method_protocol_list, inner_scope)
+
+    @visitor.when(MethodProtocolNode)
+    def visit(self, node, scope):
+        if not scope.define_function(node.id_, node.params):
+            self.errors.append(f'Function {node.id_} is already defined in current scope.')
+        if not scope.is_func_defined(node.id_extends, len(node.params)):
+            self.errors.append(f'Function {node.id_extends} is not defined in current scope.')
+
+        inner_scope = scope.create_child_scope()
+        for param in node.params:
+            if not inner_scope.define_variable(param):
+                self.errors.append(f'Function {node.id_} is invalid, its arguments have to be different from each other.')
+    
+    @visitor.when(MethodNode)
+    def visit(self, node, scope):
+        if not scope.define_function(node.id_, node.params):
+            self.errors.append(f'Function {node.id_} is already defined in current scope.')
+        if not scope.is_func_defined(node.id_extends, len(node.params)):
+            self.errors.append(f'Function {node.id_extends} is not defined in current scope.')
+        inner_scope = scope.create_child_scope()
+        for param in node.params:
+            if not inner_scope.define_variable(param):
+                self.errors.append(f'Function {node.id_} is invalid, its arguments have to be different from each other.')
+        self.visit(node.body, inner_scope)
+
+    @visitor.when(ExtendsExprNode)
+    def visit(self, node, scope):
+        pass
+
+    @visitor.when(InheritsExprNode)
+    def visit(self, node, scope):
+        pass##################################################
+
+    @visitor.when(BodyNode)
+    def visit(self, node, scope):
+        self.visit(node.expr, scope)
+
+    @visitor.when(ParamsNode)
+    def visit(self, node, scope):
+        self.visit(node.params_aux, scope)
+
+    @visitor.when(ParamsAuxNode)
+    def visit(self, node, scope):
+        if not scope.define_variable(node.id_):
+            self.errors.append(f'Variable {node.id_} is already defined in current scope.')
+
+        if not scope.is_var_defined(node.id_extends):
+            self.errors.append(f'Variable {node.id_extends} is not defined in current scope.')
+        
+    @visitor.when(ParamsInParNode)
+    def visit(self, node, scope):
+        self.visit(node.params, scope)
+
+    @visitor.when(InstExprNode)
+    def visit(self, node, scope):
+        if not scope.is_var_defined(node.id_):
+            self.errors.append(f'Variable {node.id_} is not defined in current scope.')
+
+        ########cantidad de parametros
+        if not scope.is_func_defined(node.id_, len(node.params)):
+            self.errors.append(f'Function {node.id_} is not defined in current scope.')########cambiar nombre de error
+        
+    
+    @visitor.when(ArrayExprNode)
+    def visit(self, node, scope):
+        if not scope.is_var_defined(node.id_):
+            self.errors.append(f'Variable {node.id_} is not defined in current scope.')
+        self.visit(node.expr, scope)
+
+    @visitor.when(PrintExprNode)
+    def visit(self, node, scope):
+        self.visit(node.expr, scope)
+
+    @visitor.when(LetExprNode)
+    def visit(self, node, scope):
+        inner_scope = scope.create_child_scope()
+        for decl in node.decls:##########################3
+            self.visit(decl, inner_scope)
+        self.visit(node.expr_body, inner_scope)
+
+    @visitor.when(DestrExprNode)
+    def visit(self, node, scope):
+        self.visit(node.expr, scope)
+        self.visit(node.loc, scope)
+
+    @visitor.when(WhileExprNode)
+    def visit(self, node, scope):
+        #generame un if de si node.expr es una instancia de LogicConcatExprNode o un CompExprNode
+        try:
+            if (node.expr.ret_type == "bool"):
+                self.visit(node.expr, scope)
+            else:
+                self.errors.append(f'While condition must be a boolean expression.')
+        except:
+            self.errors.append(f'While condition must be a boolean expression.')
+
+        inner_scope = scope.create_child_scope()
+        self.visit(node.expr_body, inner_scope)
+
+    @visitor.when(ForExprNode)
+    def visit(self, node, scope):
+        inner_scope = scope.create_child_scope()
+        self.visit(node.expr_body, inner_scope)
+    
+    @visitor.when(IfExprNode)
+    def visit(self, node, scope):
+        #generame un if de si node.expr es una instancia de LogicConcatExprNode o un CompExprNode
+        try:
+            if (node.expr.ret_type == "bool"):
+                
+                self.visit(node.expr, scope)
+            else:
+                self.errors.append(f'If condition must be a boolean expression.')
+        except:
+            self.errors.append(f'If condition must be a boolean expression.')
+        inner_scope = scope.create_child_scope()
+        self.visit(node.expr_body, inner_scope)
+        self.visit(node.elif_expr, inner_scope)
+
+    @visitor.when(ElifExprNode)#######
+    def visit(self, node, scope):
+        if node.expr is not None:
+            try:
+                #generame un if de si node.expr es una instancia de LogicConcatExprNode o un CompExprNode
+                if (node.expr.ret_type == "bool"):
+                    self.visit(node.expr, scope)
+                else:
+                    self.errors.append(f'Elif condition must be a boolean expression.')
+            except:
+                self.errors.append(f'Elif condition must be a boolean expression.')
+            inner_scope = scope.create_child_scope()
+            self.visit(node.expr_body, inner_scope)
+            self.visit(node.elif_expr, inner_scope)
+    
+    @visitor.when(ElseExprNode)
+    def visit(self, node, scope):
+        inner_scope = scope.create_child_scope()
+        self.visit(node.expr_body, inner_scope)
+
+    @visitor.when(DeclNode)
+    def visit(self, node, scope):
+        # if not scope.define_variable(node.id_):
+        #     self.errors.append(f'Variable {node.id_} is already defined in current scope.')
+        if scope.is_var_defined(node.id_extend.id_):###########################is type defined
+            self.errors.append(f'Variable {node.id_extend.id_} is not defined in current scope.')
+        self.visit(node.expr, scope)
+
+    @visitor.when(DeclsNode)
+    def visit(self, node, scope):
+        self.visit(node.decls, scope)
+        self.visit(node.decl, scope)
+    
+    @visitor.when(ExprBodyNode)
+    def visit(self, node, scope):
+        self.visit(node.expr, scope)
+    
+    @visitor.when(ExprListSemiNode)
+    def visit(self, node, scope):
+        self.visit(node.expr, scope)
+        self.visit(node.expr_list_semi, scope)
+
+    @visitor.when(IdExtendNode) ###################
+    def visit(self, node, scope):
+        if not scope.is_var_defined(node.id_):
+            self.errors.append(f'Variable {node.id_} is not defined in current scope.')
+    
+    @visitor.when(ExprElemNode)
+    def visit(self, node, scope):
+        self.visit(node.expr_elem, scope)
+        self.visit(node.as_expr, scope)
+
+    @visitor.when(AsExprNode)
+    def visit(self, node, scope):
+        self.visit(node.as_expr, scope)
+        self.visit(node.logic_concat_expr, scope)
+
+    @visitor.when(LogicConcatExprNode)
+    def visit(self, node, scope):
+        self.visit(node.logic_concat_expr, scope)
+        self.visit(node.comp_expr, scope)
+    
+    @visitor.when(CompExprNode)
+    def visit(self, node, scope):
+        
+        self.visit(node.comp_expr, scope)
+        self.visit(node.aritm_expr, scope)
+
+    @visitor.when(AndNode)
+    def visit(self, node, scope):
+        self.visit(node.logic_concat_expr, scope)
+        self.visit(node.comp_expr, scope)
+
+    @visitor.when(OrNode)
+    def visit(self, node, scope):
+        self.visit(node.logic_concat_expr, scope)
+        self.visit(node.comp_expr, scope)
+
+    @visitor.when(NotNode)
+    def visit(self, node, scope):
+        #self.visit(node.logic_concat_expr, scope)
+        self.visit(node.comp_expr, scope)
+
+    @visitor.when(AritmExprNode)
+    def visit(self, node, scope):
+        # if(not(recursivity(node.aritm_expr)== recursivity(node.term))):
+        #     self.errors.append(f'Incompatible types in arithmetical expression.')
+        self.visit(node.aritm_expr, scope)
+        self.visit(node.term, scope)
+
+
+    @visitor.when(SumNode)
+    def visit(self, node, scope):
+        #type_1 = findType(node.aritm_expr)
+        #type_2 = findType(node.term)
+        type_1 = node.aritm_expr.ret_type
+        type_2 = node.term.ret_type
+        if(not(type_1 == type_2) and type_1 != 'str' and type_2 != 'str'):
+            self.errors.append(f'Incompatible types in arithmetical expression.')
+        self.visit(node.aritm_expr, scope)
+        self.visit(node.term, scope)
+
+    @visitor.when(MinusNode)
+    def visit(self, node, scope):
+        #type_1 = findType(node.aritm_expr)
+        #type_2 = findType(node.term)
+        type_1 = node.aritm_expr.ret_type
+        type_2 = node.term.ret_type
+        if(not(type_1 == type_2) and type_1 != 'str' and type_2 != 'str'):
+            self.errors.append(f'Incompatible types in arithmetical expression.')
+        self.visit(node.aritm_expr, scope)
+        self.visit(node.term, scope)
+
+    @visitor.when(DivNode)
+    def visit(self, node, scope):
+        #type_1 = findType(node.pow_expr)
+        #type_2 = findType(node.term)
+        type_1 = node.pow_expr.ret_type
+        type_2 = node.term.ret_type
+        if(not(type_1 == type_2) and type_1 != 'str' and type_2 != 'str'):
+            self.errors.append(f'Incompatible types in arithmetical expression.')
+        self.visit(node.pow_expr, scope)
+        self.visit(node.term, scope)
+
+    @visitor.when(MultNode)
+    def visit(self, node, scope):
+        #type_1 = findType(node.pow_expr)
+        #type_2 = findType(node.term)
+        type_1 = node.pow_expr.ret_type
+        type_2 = node.term.ret_type
+        if(not(type_1 == type_2) and type_1 != 'str' and type_2 != 'str'):
+            self.errors.append(f'Incompatible types in arithmetical expression.')
+        self.visit(node.pow_expr, scope)
+        self.visit(node.term, scope)
+    
+    @visitor.when(ModNode)
+    def visit(self, node, scope):
+        #type_1 = findType(node.aritm_expr)
+        #type_2 = findType(node.term)
+        type_1 = node.pow_expr.ret_type
+        type_2 = node.term.ret_type
+        if(not(type_1 == type_2) and type_1 != 'str' and type_2 != 'str'):
+            self.errors.append(f'Incompatible types in arithmetical expression.')
+        self.visit(node.pow_expr, scope)
+        self.visit(node.term, scope)
+    
+
+    @visitor.when(TermNode)
+    def visit(self, node, scope):
+        self.visit(node.term, scope)
+        self.visit(node.pow_expr, scope)
+
+    @visitor.when(PowExprNode)
+    def visit(self, node, scope):
+        self.visit(node.pow_expr, scope)
+        self.visit(node.negative, scope)
+
+    @visitor.when(NegativeNode)
+    def visit(self, node, scope):
+        self.visit(node.factor, scope)
+    
+    @visitor.when(FactorNode)
+    def visit(self, node, scope):
+        self.visit(node.expr, scope)
+        self.visit(node.params_aux, scope)
+        self.visit(node.expr2, scope)
+
+    @visitor.when(VectorNode)
+    def visit(self, node, scope):
+        self.visit(node.expr, scope)
+        self.visit(node.params_aux, scope)
+        self.visit(node.expr2, scope)
+
+
+    @visitor.when(LocNode)
+    def visit(self, node, scope):
+        # if not scope.is_var_defined(node.id_):
+        #     self.errors.append(f'Variable {node.id_} is not defined in current scope.')
+        self.visit(node.args_in_par, scope)
+    
+    @visitor.when(ArgsNode)
+    def visit(self, node, scope):
+        self.visit(node.args_aux, scope)
+    
+    @visitor.when(ArgsAuxNode)
+    def visit(self, node, scope):
+        self.visit(node.args_aux, scope)
+        self.visit(node.expr, scope)
+    
+    @visitor.when(ArgsInParNode)
+    def visit(self, node, scope):
+        self.visit(node.args, scope)
+
+
+
+def findType(node):
+
+    try:
+        return findType(node.expr_elem)
+    except:
+        pass
+
+    try:
+        return findType(node.as_expr)
+    except:
+        pass
+
+    try:
+        return findType(node.logic_concat_expr)
+    except:
+        pass
+
+    try:
+        return findType(node.comp_expr)
+    except:
+        pass
+
+    try:
+        return findType(node.aritm_expr)
+    except:
+        pass
+
+    try:
+        return findType(node.term)
+    except:
+        pass
+
+    try:
+        return findType(node.pow_expr)
+    except:
+        pass
+
+    try:
+        return findType(node.negative)
+    except:
+        pass
+
+    try:
+        return findType(node.factor)
+    except:
+        pass
+
+    try:
+        return findType(node.loc)####
+    except:
+        pass
+
+    try:
+        return findType(node.expr)
+    except:
+        pass
+
+    return node.__class__.__name__
+
+    # try:
+    #     if node.term.pow_expr.factor.__class__.__name__== "NumNode" or node.term.pow_expr.factor.__class__.__name__== "MathNode":
+    #         return "num"
+    # except:
+    #     pass
+    # try :
+    #     if node.pow_expr.factor.__class__.__name__== "NumNode" or node.pow_expr.factor.__class__.__name__== "MathNode":
+    #         return "num"
+    # except:
+    #     pass
+    # try:
+    #     if node.aritm_expr.term.pow_expr.factor.__class__.__name__== "NumNode" or node.aritm_expr.term.pow_expr.factor.__class__.__name__== "MathNode":
+    #         return "num"
+    # except:
+    #     pass
+    # try :
+    #     if node.aritm_expr.term.__class__.__name__== "MultNode" or node.aritm_expr.term.__class__.__name__== "DivNode"or node.aritm_expr.term.__class__.__name__== "ModNode":
+    #         return "num"
+    # except:
+    #     pass
+
+#region Evaluate
+
+class SemanticCheckerEvaluate(object):
+    def __init__(self):
+        #self.errors = []
+        self.results = []
     
     @visitor.on('node')
     def visit(self, node, scope):
@@ -540,47 +1815,392 @@ class SemanticCheckerVisitor(object):
     def visit(self, node, scope=None):
         if scope is None:
             scope = Scope()
-        for statement_node in node.statements:
-            self.visit(statement_node, scope)
-        return self.errors
+        try :
+            x = self.visit(node.program, scope)
+            if x != None:
+               for elem in x:
+                  self.results.append(elem)
+        except:
+            pass
+        try :
+            res = self.visit(node.expr, scope)
+            if res != None and res != []:
+                if isinstance(res,list):
+                    for elem in res:
+                        if isinstance(elem,list):
+                            for elem2 in elem:
+                                if(elem2 != None):
+                                    self.results.append(elem2)
+                        else:
+                            self.results.append(elem)
+                else:
+                    self.results.append(res)
+        except:
+            pass
     
-    # @visitor.when(VarDeclarationNode)
-    # def visit(self, node, scope):
-    #     self.visit(node.expr, scope) 
-    #     if not scope.define_variable(node.id):
-    #         self.errors.append(f'Variable {node.id} is already defined in current scope.')       
+    @visitor.when(ExprNode)
+    def visit(self, node, scope):
+        self.visit(node.expr_elem, scope)
+        self.visit(node.expr, scope)
+
+    @visitor.when(FunctionStatNode)
+    def visit(self, node, scope):
+        scope.insert_function(node.id_, node.params, node.id_extend, node.body)
+
+
+    @visitor.when(TypeStatNode)
+    def visit(self, node, scope):
+        scope.insert_type(node.id_, node.params_in_par.params, node.inherits_expr, node.decls_methods_semi)
+        
+    @visitor.when(ProtocolStatNode)
+    def visit(self, node, scope):
+        scope.insert_protocol(node.id_ ,node.extends_expr, node.method_protocol_list)
+
+    @visitor.when(MethodProtocolNode)
+    def visit(self, node, scope):
+        pass
     
-    # @visitor.when(FuncDeclarationNode)
-    # def visit(self, node, scope):
-    #     inner_scope = scope.create_child_scope()
-    #     for param in node.params:
-    #         if not inner_scope.define_variable(param):
-    #             self.errors.append(f'Function {node.id} is invalid, its arguments have to be different from each other.')
-    #     self.visit(node.body,inner_scope)
-    #     if not scope.define_function(node.id, node.params):
-    #         self.errors.append(f'Function {node.id} is already defined with {len(node.params)} arguments.')
+    @visitor.when(MethodNode)
+    def visit(self, node, scope):
+        pass
+
+    @visitor.when(ExtendsExprNode)
+    def visit(self, node, scope):
+        pass
+
+    @visitor.when(InheritsExprNode)
+    def visit(self, node, scope):
+        pass
+
+    @visitor.when(BodyNode)
+    def visit(self, node, scope):
+        return self.visit(node.expr, scope)
+
+    @visitor.when(ParamsNode)
+    def visit(self, node, scope):
+        return self.visit(node.params_aux, scope)
+
+    @visitor.when(ParamsAuxNode)
+    def visit(self, node, scope):
+        pass
+        
+    @visitor.when(ParamsInParNode)
+    def visit(self, node, scope):
+        pass
+
+    @visitor.when(InstExprNode)
+    def visit(self, node, scope):
+        pass
     
+    @visitor.when(ArrayExprNode)
+    def visit(self, node, scope):
+        pass
+
     @visitor.when(PrintExprNode)
     def visit(self, node, scope):
-        self.visit(node.expr, scope)
-    
-    # @visitor.when(ConstantNumNode)
-    # def visit(self, node, scope):
-    #     pass
-    
-    # @visitor.when(VariableNode)
-    # def visit(self, node, scope):
-    #     if not scope.is_var_defined(node.lex):
-    #         self.errors.append(f'Variable {node.lex} is not defined.')
-    
-    # @visitor.when(CallNode)
-    # def visit(self, node, scope):
-    #     for argument_node in node.args:
-    #         self.visit(argument_node,scope)
-    #     if not scope.is_func_defined(node.lex,len(node.args)):
-    #         self.errors.append(f'Function {node.lex} is not defined with {len(node.args)} arguments.')
-    
-    @visitor.when(BinaryNode)
+        return str(self.visit(node.expr, scope))
+
+    @visitor.when(LetExprNode)
     def visit(self, node, scope):
-        self.visit(node.left,scope)
-        self.visit(node.right,scope)
+        #inner_scope = scope.create_child_scope()
+        for decl in node.decls:
+            scope.variables[decl.id_] = self.visit(decl.expr, scope)
+            if(decl.id_extend.id_ != None):
+                scope.variables_extends[decl.id_] = decl.id_extend.id_ 
+        
+        return self.visit(node.expr_body, scope)
+
+    @visitor.when(DestrExprNode)
+    def visit(self, node, scope):
+
+        scope.variables[node.loc.id_] = self.visit(node.expr, scope)
+
+
+    @visitor.when(WhileExprNode)
+    def visit(self, node, scope):
+        ret_val = []
+        temp=self.visit(node.expr, scope)
+        while(temp):
+            ret_val.append(self.visit(node.expr_body, scope))
+            temp=self.visit(node.expr, scope)
+        return ret_val
+
+    @visitor.when(ForExprNode)
+    def visit(self, node, scope):
+        ret_val = []
+        if(node.expr.ret_type == "vector"):
+            vector = self.visit(node.expr,scope)
+        if(node.expr.expr_elem.as_expr.logic_concat_expr.comp_expr.aritm_expr.term.pow_expr.factor.expr.id_ == "range"):
+            x = node.expr.expr_elem.as_expr.logic_concat_expr.comp_expr.aritm_expr.term.pow_expr.factor.expr.args_in_par.args.args_aux
+            vector = range(int(x.args_aux.args_aux.expr_elem.as_expr.logic_concat_expr.comp_expr.aritm_expr.term.pow_expr.factor.value),int(x.expr.expr_elem.as_expr.logic_concat_expr.comp_expr.aritm_expr.term.pow_expr.factor.value))
+            temporary = []
+            for i in vector:
+                temporary.append(i)
+            vector = [[temporary]]
+        elif(node.expr.ret_type == "str"):
+            vector = scope.variables[node.expr.expr_elem.as_expr.logic_concat_expr.comp_expr.aritm_expr.term.pow_expr.factor.expr.id_]
+        if(vector!=None and vector!=[]):
+            temp=vector[0][0]
+            for i in temp:
+                scope.variables[node.id_] = i
+                x=self.visit(node.expr_body, scope)
+                try:
+                    if(temporary != None):
+                        ret_val.append(x)
+                except:
+                    ret_val.append(x[0])
+            return ret_val
+
+    @visitor.when(IfExprNode)
+    def visit(self, node, scope):
+        if(self.visit(node.expr, scope)):
+            return self.visit(node.expr_body, scope)
+        else:
+            return self.visit(node.elif_expr, scope)
+        
+
+    @visitor.when(ElifExprNode)
+    def visit(self, node, scope):
+        if(self.visit(node.expr, scope)):
+            return self.visit(node.expr_body, scope)
+        return self.visit(node.elif_expr, scope)
+        
+
+    @visitor.when(ElseExprNode)
+    def visit(self, node, scope):
+        return self.visit(node.expr_body, scope)
+
+    @visitor.when(DeclNode)
+    def visit(self, node, scope):
+        pass
+
+    @visitor.when(DeclsNode)
+    def visit(self, node, scope):
+        pass
+    
+    @visitor.when(ExprBodyNode)
+    def visit(self, node, scope):
+        return self.visit(node.expr, scope)
+    
+    @visitor.when(ExprListSemiNode)
+    def visit(self, node, scope):
+        ret_value =[]
+        if(node.expr_list_semi != None):
+            temp=self.visit(node.expr_list_semi, scope)
+            if isinstance(temp,list):
+                for i in temp:
+                    ret_value.append(i)
+            else:
+                ret_value.append(temp)
+
+        if(node.expr != None):
+            temp2=self.visit(node.expr, scope)
+
+            if isinstance(temp2,list):
+                for i in temp2:
+                    ret_value.append(i)
+            else:
+                ret_value.append(temp2)
+
+            
+        return ret_value
+
+    @visitor.when(IdExtendNode)
+    def visit(self, node, scope):
+        pass
+    
+    @visitor.when(ExprElemNode)
+    def visit(self, node, scope):
+        if(node.is_expr):
+            if(node.expr_elem.ret_type == node.as_expr.ret_type):
+                return True
+            elif(node.expr_elem in scope.variables_extends.keys() and scope.variables_extends[node.expr_elem] == node.as_expr.ret_type):            
+                return True
+            else:
+                return False
+        else:
+            return self.visit(node.expr_elem, scope)
+
+    @visitor.when(AsExprNode)
+    def visit(self, node, scope):
+        return self.visit(node.as_expr, scope)
+
+    @visitor.when(LogicConcatExprNode)
+    def visit(self, node, scope):
+        if(node.arroba_type == "@"):
+            return str(self.visit(node.logic_concat_expr, scope)) + str(self.visit(node.comp_expr, scope))
+        elif(node.arroba_type == "@@"):
+            return str(self.visit(node.logic_concat_expr, scope)) + " " + str(self.visit(node.comp_expr, scope))
+        else:
+            return self.visit(node.logic_concat_expr, scope)
+    
+    @visitor.when(CompExprNode)
+    def visit(self, node, scope):
+        return self.visit(node.comp_expr, scope)
+
+    @visitor.when(EqualsNode)
+    def visit(self, node, scope):
+        return self.visit(node.comp_expr, scope) == self.visit(node.aritm_expr, scope)
+    
+    @visitor.when(NotEqualsNode)
+    def visit(self, node, scope):
+        return self.visit(node.comp_expr, scope) != self.visit(node.aritm_expr, scope)
+    
+    @visitor.when(LessNode)
+    def visit(self, node, scope):
+        return self.visit(node.comp_expr, scope) < self.visit(node.aritm_expr, scope)
+    
+    @visitor.when(LessEqualsNode)
+    def visit(self, node, scope):
+        return self.visit(node.comp_expr, scope) <= self.visit(node.aritm_expr, scope)
+    
+    @visitor.when(GreaterNode)
+    def visit(self, node, scope):
+        return self.visit(node.comp_expr, scope) > self.visit(node.aritm_expr, scope)
+    
+    @visitor.when(GreaterEqualsNode)
+    def visit(self, node, scope):
+        return self.visit(node.comp_expr, scope) >= self.visit(node.aritm_expr, scope)
+            
+    @visitor.when(AndNode)
+    def visit(self, node, scope):
+        return self.visit(node.logic_concat_expr, scope) and self.visit(node.comp_expr, scope)
+
+    @visitor.when(OrNode)
+    def visit(self, node, scope):
+        return self.visit(node.logic_concat_expr, scope) or self.visit(node.comp_expr, scope)
+
+    @visitor.when(NotNode)
+    def visit(self, node, scope):
+        return not self.visit(node.comp_expr, scope)
+
+    @visitor.when(AritmExprNode)
+    def visit(self, node, scope):
+        return self.visit(node.aritm_expr, scope)
+
+
+    @visitor.when(SumNode)
+    def visit(self, node, scope):
+        a= float(self.visit(node.aritm_expr,scope)) 
+        b= float(self.visit(node.term,scope))
+        return a +b
+
+    @visitor.when(MinusNode)
+    def visit(self, node, scope):
+        return float(self.visit(node.aritm_expr,scope)) - float(self.visit(node.term,scope))
+
+    @visitor.when(DivNode)
+    def visit(self, node, scope):
+        return float(self.visit(node.term,scope)) / float(self.visit(node.pow_expr,scope))
+
+    @visitor.when(MultNode)
+    def visit(self, node, scope):
+        return float(self.visit(node.term,scope)) * float(self.visit(node.pow_expr,scope))
+    
+    @visitor.when(ModNode)
+    def visit(self, node, scope):
+        return float(self.visit(node.term,scope)) % float(self.visit(node.pow_expr,scope))
+    
+
+    @visitor.when(TermNode)
+    def visit(self, node, scope):
+        return self.visit(node.term, scope)
+
+    @visitor.when(PowExprNode)
+    def visit(self, node, scope):
+        if(node.negative is not None):
+            return self.visit(node.pow_expr, scope) ** self.visit(node.negative, scope)
+        
+        else:
+            return self.visit(node.pow_expr, scope)
+
+    @visitor.when(NegativeNode)
+    def visit(self, node, scope):
+        if(node.is_negative):
+            return -self.visit(node.negative, scope)
+        else:
+            return self.visit(node.factor, scope)
+    
+    @visitor.when(FactorNode)
+    def visit(self, node, scope):
+        return self.visit(node.expr, scope)
+    
+
+    @visitor.when(LocNode)
+    def visit(self, node, scope):
+        if(node.loc is None):
+            if(not node.args_in_par.is_args_in_par):####################
+                return scope.get_variable(node.id_)
+            else:
+                func = scope.get_function(node.id_)
+                params = func[0].params_aux[0].id_
+                extends = func[1]
+                body = func[2]
+                args_values = node.args_in_par.args.args_aux.args_aux.expr_elem.as_expr.logic_concat_expr.comp_expr.aritm_expr.term.pow_expr.factor.value
+
+                scope.insert_variable(params, args_values)
+                a = self.visit(body, scope)
+                return a
+        else:
+            pass
+    
+    @visitor.when(ArgsNode) ############# ?
+    def visit(self, node, scope):
+        if(node.args_aux != None):
+            return self.visit(node.args_aux, scope)
+    
+    @visitor.when(ArgsAuxNode) ########## ?
+    def visit(self, node, scope):
+        ret_value = []
+
+        temp1=self.visit(node.args_aux,scope)
+        temp2=self.visit(node.expr, scope)
+        if(isinstance(temp1,list)):
+            for i in temp1:
+                ret_value.append(i)
+        else:
+            ret_value.append(temp1)
+        if(isinstance(temp2,list)):
+            for i in temp2:
+                ret_value.append(i)
+        else:
+            ret_value.append(temp2)
+
+        return ret_value
+    
+    @visitor.when(ArgsInParNode)
+    def visit(self, node, scope):
+        return self.visit(node.args, scope)
+    
+    @visitor.when(NumNode)
+    def visit(self, node, scope):
+        if(node.math_func != None):
+            if(node.math_func == "sin"):
+                return math.sin(float(self.visit(node.value,scope)))
+            elif(node.math_func == "cos"):
+                return math.cos(float(self.visit(node.value,scope)))
+            elif(node.math_func == "sqrt"):
+                return math.sqrt(float(self.visit(node.value,scope)))
+            elif(node.math_func == "log"):
+                return math.log(float(self.visit(node.value,scope)),float(self.visit(node.value2,scope)))
+            elif(node.math_func == "exp"):
+                return math.exp(float(self.visit(node.value,scope)))
+            elif(node.math_func == "rand"):
+                return random.randint()####
+        else: 
+            return float(node.value)
+    
+    #@visitor.when(BoolNode)
+
+    @visitor.when(StrNode)
+    def visit(self, node, scope):
+        return node.value
+    
+    @visitor.when(VectorNode)
+    def visit(self, node, scope):
+        if(node.params_aux is None and node.expr2 is None):
+            return [[self.visit(node.expr, scope)]]
+        else:
+            pass
+
+#endregion
