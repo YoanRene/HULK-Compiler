@@ -16,7 +16,7 @@ class ShiftReduceParser:
     def _build_parsing_table(self):
         raise NotImplementedError()
 
-    def __call__(self, w,get_shift_reduce=False):
+    def __call__(self, w, lines, get_shift_reduce=False):
         stack = [ 0 ]
         cursor = 0
         output = []
@@ -31,7 +31,7 @@ class ShiftReduceParser:
             try:
                 self.action[state, lookahead.Name]
             except:
-                return None
+                assert False, f"Failed to parse in line {lines[cursor]}"
 
             action, tag = self.action[state, lookahead.Name]
             #(Shift case)

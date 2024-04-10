@@ -24,7 +24,7 @@ def init():
     'print("The meaning of life is " @ 42);','print(sin(2 * PI) ^ 2 + cos(3 * PI / log(4, 64)));',
     'function tan(x) => sin(x) / cos(x);',
     'function operate(x, y) {print(x + y);print(x - y);print(x * y);print(x / y);}',
-    'let msg = "Hello World" in print(msg);','let number = 42, text = "The meaning of life is" in print(text @ number);',
+    'let ifmsg = "Hello World" in print(ifmsg);','let number = 42, text = "The meaning of life is" in print(text @ number);',
     'let number = 42 in let text = "The meaning of life is" in print(text @ number);',
     'let number = 42 in (let text = "The meaning of life is" in (print(text @ number)));',
     'let a = 6, b = a * 7 in print(b);','let a = 6 in let b = a * 7 in print(b);',
@@ -42,6 +42,7 @@ def init():
 
     #Pruebas con errores
 
+
     # texts=['while(5){print("hola");};',
     # 'if(5){print("hola");}else{print("la");};',
     # ' 5 + (b & c);',
@@ -58,13 +59,18 @@ def init():
     tokenslist = []
 
     for i in texts:
+        l=1
+        lines=[]
         tokens = lexer(i)
         tokenslist.append(tokens)
         tokens_type = []
         for j in tokens:
-            if j.token_type!='space':
+            if j.token_type!='space' and j.token_type!='line':
                 tokens_type.append(j.token_type)
-        parse,operations = parser(tokens_type, get_shift_reduce=True)
+                lines.append(l)
+            if j.token_type=='line':
+                l+=1
+        parse,operations = parser(tokens_type, lines, get_shift_reduce=True)
         parserslist.append(parse)
         operationslist.append(operations)
 
@@ -78,7 +84,7 @@ def init():
         new_tokens = []
 
         for i in tokenslist[j]:
-            if(i.token_type!='space'):
+            if(i.token_type!='space' and i.token_type!='line'):
                 new_tokens.append(i)
         ast = evaluate_reverse_parse(parserslist[j], operationslist[j], new_tokens)
         astlist.append(ast)

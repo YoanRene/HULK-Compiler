@@ -219,10 +219,11 @@ def HulkGrammar():
     letters = '|'.join(chr(n) for n in range(ord('a'),ord('z')+1))
     letters = letters +'|'+'|'.join(chr(n) for n in range(ord('A'),ord('Z')+1))
     symbols="!|@|%|^|&|\\*|_|+|-|/|:|;|<|>|=|,|.|?|~|`|\\(|\\)|[|]|{|}|#|'|\\||¿|¡|º|ª|¬"  #\\* todos los doble palos
-    string_re = f'\\"({letters}|{nonzero_digits}|{symbols}| |\\")*\\"'   #\\)*\\"
+    string_re = f'\\"({letters}|0|{nonzero_digits}|{symbols}| )*\\"'   #\\)*\\"
 
     lexer = Lexer([
         ('space',' *'),
+        ('line','\n'),
 
         (semi,semi.Name),
         (comma, comma.Name),
