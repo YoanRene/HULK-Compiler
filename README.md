@@ -112,3 +112,38 @@ Para la construcción del Autómata LR(1) se utilizan las siguientes funciones:
 Para la construcción de la tabla de análisis, se aumenta la gramática agregando un nuevo símbolo inicial. Se construye el autómata LR(1) canónico utilizando `build_LR1_automaton`. Se recorren los estados del autómata y registra las acciones de desplazamiento, reducción y aceptación en las tablas `self.action` y `self.goto`.
 
 El método `__call__` de `ShiftReduceParser` implementa el algoritmo de análisis LR(1) utilizando las tablas construidas. Mantiene una pila de estados y, en cada paso, consulta las tablas para determinar la acción a realizar (desplazar, reducir o aceptar) según el estado actual y el siguiente símbolo de entrada. En resumen, este código implementa la construcción del autómata LR(1) canónico y la tabla de análisis correspondiente, así como el proceso de análisis de cadenas de entrada utilizando dicha tabla.
+
+#### Parser SLR1
+
+Además de la implementación del Parser LR(1) también se implementó un Parser SLR(1). Esto debido a que con el primero, que fue la idea original para el proyecto, los tiempos de construcción del mismo llegaban a ser mayores de 13 minutos. Esto hacía especialmente difícil la construcción de la Gramática y poder modificar elementos en el código para solucionar errores en la misma. Por ello, se decidió implementar el Parser SLR(1) que resultó mucho más rápida la construcción.
+
+- `build_LR0_automaton` : Construye un autómata finito a partir de la gramática. Dicho autómata representa los estados posibles durante el análisis de una cadena de entrada. Para construirlo, se explora todas las combinaciones posibles de símbolos que se pueden leer de la gramática y los estados a los que llevan.
+
+- `SLR1Parser` : Es la definición de la clase principal del analizador. Se construye la tabla de análisis a partir del autómata generado previamente. Esta tabla indica la acción que debe tomar el analizador en cada estado, dependiendo del siguiente símbolo de la cadena de entrada. Las acciones principales son "shift" o "reduce". Para llenar la tabla de análisis, el código también necesita calcular los conjuntos "First" y "Follow" de la gramática. Estos conjuntos ayudan a decidir la acción correcta en cada estado analizando el siguiente símbolo y los posibles símbolos que pueden seguir en la cadena de entrada.
+
+### AST
+
+Se definen una serie de clases representativas de cada tipo de nodo posible en el AST, en dependencia de la gramática construida y los tipos que ahí se definen.
+
+### Gramática
+
+Se define una Gramática siguiendo las reglas sintácticas del lenguaje de programación Hulk, basándose en la información otorgada. Para ello se definen No-Terminales, Terminales y un conjunto de producciones.
+
+
+### Semantic Checker
+
+Contiene la implementación de lo relacionado con Chequeo Semántico. Se analiza el código fuente escrito en este lenguaje e identifica errores semánticos, esto se hace nodo por nodo utilizando el patrón "visitor". Para cada tipo de nodo, el verificador define un método `visit` específico que realiza las comprobaciones semánticas necesarias.  Las principales comprobaciones que realiza el verificador son:
+
+- Verificación de variables: Se verifica que las variables se definan antes de ser utilizadas y que los nombres de las variables no entren en conflicto con nombres de funciones o tipos ya definidos.
+
+- Verificación de funciones: Se verifica que los parámetros de las funciones sean únicos (no se pueden repetir nombres de parámetros), que las funciones se definan antes de ser utilizadas y que el número de argumentos en una llamada a una función coincida con el número de parámetros definidos en la función.
+
+- Verificación de tipos: Se verifica que las expresiones tengan un tipo compatible con las operaciones que se realizan (por ejemplo, no se puede sumar un booleano y un entero).
+
+- Verificación de expresiones condicionales: Se verifica que las condiciones en estructuras if, while, y elif sean expresiones booleanas (verdadero o falso).
+
+Si se encuentra un error, lo agrega a una lista de errores que se reporta al usuario.
+
+### Evaluador
+
+Al igual que en el chequeo semántico, se realiza un recorrido por los nodos del AST para evaluar recursivamente las expresiones y retornar un resultado al usuario. Para ello, nuevamente se definen diversas clases para los diferentes nodos, y se utiliza el patrón "visitor".
